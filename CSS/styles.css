@@ -1,0 +1,92 @@
+<style type="text/css">
+    
+    	.primary{
+    	
+    		background-color:  #4da6ff;
+    		height: 400px;
+    		text-align: center;
+    	
+    	}
+    	
+    	.Logo{
+    	
+    		width : 350px;
+    		height:350px;
+    		margin-top:25px;
+    	
+    	}
+    	
+    	hr{
+    	
+    		border: 2px solid black;
+    	
+    	}
+    	
+    	.card {
+		  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+		  max-width: 200px;
+		  /*margin: auto;*/
+		  text-align: center;
+		  font-family: arial;
+		}
+		
+		.faculty-column {
+		  float: left;
+		  width: 33.33%;
+		  padding: 5px;
+		}
+		
+		.faculty-row::after {
+		  content: "";
+		  clear: both;
+		  display: table;
+		}
+		
+		.containerdash{
+		
+			margin-left : 175px;
+		}
+		
+		
+		li {
+		  float: left;
+		}
+
+		li a {
+		  display: block;
+		  color: #666;
+		  text-align: center;
+		  padding: 14px 16px;
+		  text-decoration: none;
+		}
+
+		li a:hover:not(.active) {
+		  background-color: #ddd;
+		}
+
+		li a.active {
+		  color: white;
+		  background-color: #4da6ff;
+		}
+		
+		.has-navigation {
+		  list-style-type: none;
+		  width: 100%;
+		  margin: 0;
+		  padding: 0;
+		  overflow: hidden;
+		  border: 1px solid #e7e7e7;
+		  font-size: 18px;
+		}
+		
+		.modal-content{
+		
+			font: 14px sans-serif;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 800px;
+			padding: 20px;
+		
+		}
+</style>
