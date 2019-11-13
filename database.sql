@@ -2,27 +2,30 @@ DROP DATABASE IF EXISTS faculty_portal;
 CREATE DATABASE faculty_portal;
 \c faculty_portal;
 
--- Store USernames and passwords for Faculty
-CREATE TABLE Users (
 
-	Id Integer,
-	Name varchar,
-	username varchar,
-	password varchar,
-	PRIMARY KEY( Id )
-
-};
 
 -- Faculty table will store the details of all the existing faculties,HODs,Cross-cutting Faculties, Director etc
 CREATE TABLE Faculty (
-  Id Integer REFERENCES Users(Id),
+  Id Integer,
   Name varchar,
   dept_id Integer,
   Email varchar,
   Profile varchar,
   Joined_On timestamp,
   Left_On timestamp,
-  Leave_id integer
+  Leave_id integer,
+  PRIMARY KEY(Id)
+  
+);
+
+-- Store USernames and passwords for Faculty
+CREATE TABLE Users (
+
+	Id Integer REFERENCES Faculty(Id),
+	Name varchar,
+	username varchar,
+	password varchar
+
 );
 
 -- The department table will have the names of the branches like: CSE, EE, ME etc
