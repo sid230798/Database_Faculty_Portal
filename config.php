@@ -5,6 +5,7 @@
 	try
 	{
 	  $manager = new MongoDB\Driver\Manager("mongodb://localhost");
+	  $pg = pg_connect("host=localhost dbname=faculty_portal user=db_project password=12qwaszx");
 	}
 	catch (MongoConnectionException $e)
 	{
