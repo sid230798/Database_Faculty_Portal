@@ -2,22 +2,39 @@
 
 	## Include connection.php file and extract list of faculty_names
 	 session_start();
+	 require_once("config.php");
      $_SESSION['url'] = $_SERVER['REQUEST_URI'];
-     
+     $is_correct = False;
      if(isset($_GET['q'])){
      
      	$dept_name = $_GET['q'];
-     	
-     	if(strcmp($dept_name, "CS") == 0)
+
+     	if(strcmp($dept_name, "CS") == 0){
      		$dept_to_write = "Computer Science Department";
-     	else if(strcmp($dept_name, "EE") == 0)
+     		$is_correct = True;     		     		
+     	}
+     	else if(strcmp($dept_name, "EE") == 0){
      		$dept_to_write = "Electrical Department";
-     	else if(strcmp($dept_name, "ME") == 0)
+     		$is_correct = True;
+     	}
+     	else if(strcmp($dept_name, "ME") == 0){
      		$dept_to_write = "Mechanical Department";
+     		$is_correct = True;
+     	}
      	else
      		$dept_to_write = Null;	
      
      }
+     
+     if($is_correct == True){
+     
+     	$result = pg_query($pg, "select Faculty.Name, Users.username from Faculty, Department, Users where Faculty.Id = Users.Id and Faculty.dept_id = Department.Id and  Department.name='$dept_name'");
+     	$resultHOD = pg_query($pg, "select Faculty.Name, Users.username from Faculty, Department, Users, HOD where Faculty.Id = Users.Id and Faculty.dept_id = Department.Id and Department.Id = HOD.dept_id and Department.name='$dept_name'");
+     	$resultHOD = pg_fetch_all($resultHOD);     		
+     	$resultArr = pg_fetch_all($result);     
+     }
+     
+     
 
 ?>
 <!DOCTYPE html>
@@ -146,7 +163,11 @@
 							<div class="containerdash">
 							
 							<li class style="float:right; margin-right: 30px">
-								<button class="trigger" onclick="openForm()">Login</button>
+								<?php if(!isset($_SESSION['loggedin'])) {?>
+									<button class="trigger" onclick="openForm()">Login</button>
+								<?php }else{?>
+									<a href="template.php?q=<?php echo $_SESSION['username']; ?>""> <?php echo $_SESSION['username']; ?></a>
+								<?php }?>
 							</li>
 							</div>
 						</ul>
@@ -169,10 +190,10 @@
 				<h2 style="color:#595959;"> Head Of Department </h2>
 				<hr>
 				<!-- Insert link for HOD's Page here-->
-				<a href="#">
+				<a href="template.php?q=<?php echo $resultHOD[0]['username']; ?>">
 					<div class="card">
 					  <img src="Images/Person.png" alt="John" style="width:100%">
-					  <h3>Head of Department's Name</h3>
+					  <h3><?php echo $resultHOD[0]['name']; ?></h3>
 					</div>
 				</a>
 			</div>
@@ -183,15 +204,19 @@
 				<div class="faculty-row">
 				
 					<!-- Repeat this for number of faculties -->
-					<div class="faculty-column">
-						<a href="#">
-							<div class="card">
-							  <img src="Images/Person.png" alt="John" style="width:100%">
-							  <h3>Faculty_Name</h3>
-							</div>
-						</a>
-					</div>
+					<?php for($count = 0; $count < count($resultArr); $count++){?>
 					
+						<?php if(strcmp($resultArr[$count]['username'], $resultHOD[0]['username']) != 0){?>
+							<div class="faculty-column">
+								<a href="template.php?q=<?php echo $resultArr[$count]['username']; ?>">
+									<div class="card">
+									  <img src="Images/Person.png" alt="John" style="width:100%">
+									  <h3><?php echo $resultArr[$count]['name']; ?></h3>
+									</div>
+								</a>
+							</div>
+						<?php } ?>
+					<?php } ?>
 					<!-- Images can change w.r.t to faculty images and name -->
 					
 				</div>
@@ -204,7 +229,7 @@
 		<div class="modal-content">
 		    <h2>Login</h2>
 		    <p>Please fill in your credentials to login.</p>
-		    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+		    <form>
 		        <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
 		            <label>Username</label>
 		            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
@@ -228,6 +253,7 @@
 		</div>
     </div>
 	
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	<script>
 	
 		
@@ -242,6 +268,30 @@
 		  document.getElementById("myForm").style.display = "none";
 		  document.getElementById("Fun").style.opacity = 1;
 		}
+		
+		$(function () {
+
+		    $('form').on('submit', function (e) {
+
+		      e.preventDefault();
+
+		      $.ajax({
+		        type: 'post',
+		        url: 'login.php',
+		        data: $('form').serialize(),
+		        success: function (result) {
+		        	
+		          if(result == 1)
+		          	location.reload();
+		          	//alert(result);
+		          else
+		          	$(".help-block").text("Incorrect Username/Passoword");
+		        }
+		      });
+
+		    });
+
+      	});
 		/*
 		var modal = document.querySelector(".modal");
 		var trigger = document.querySelector(".trigger");

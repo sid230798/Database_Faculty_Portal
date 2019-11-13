@@ -1,6 +1,60 @@
 <?php
 
-	require_once('login.php');
+	session_start();
+	require_once('config.php');
+	
+	if(isset($_GET['q'])){
+    
+    	$username = $_GET['q'];
+    	//$username= 'a';
+    	$filter = ['username' => $username];
+		$options = [];
+		$query = new MongoDB\Driver\Query($filter, $options);
+		$cursor = $manager->executeQuery('faculty_portal.users', $query);
+		
+		$name = "";
+		$email = "";
+		$overview = "";
+		$publications = array();
+		$awards = array();
+		$teaching = array();
+		$education = array();
+		
+		foreach($cursor as $entry){
+			 $c = get_object_vars($entry);
+			 $name = $c['name'];
+			 $email = $c['email'];
+			 $overview = $c['Overview'];
+		 
+			 foreach($c['Publication'] as $pub){
+			 	$tmp = get_object_vars($pub);
+			 	array_push($publications, $tmp);
+			 }
+			 
+			 foreach($c['Education'] as $edu){
+			
+				$tmp = get_object_vars($edu);
+			 	array_push($education, $tmp);
+			
+			 }
+			 
+			 foreach($c['Award'] as $aw){
+			 
+			 	$tmp = get_object_vars($aw);
+			 	array_push($awards, $tmp);
+			 
+			 }
+			 
+			 foreach($c['Teaching'] as $te){
+			 
+			 	$tmp = get_object_vars($te);
+			 	array_push($teaching, $tmp);
+			 
+			 }
+		 
+		}
+    
+    }
 
 ?>
 <!DOCTYPE html>
@@ -33,11 +87,11 @@
 			margin-left : 10px;
 		}
 		
-		li {
+		.menu-list {
 		  float: left;
 		}
 
-		li a {
+		.menu-list a {
 		  display: block;
 		  color: #666;
 		  text-align: center;
@@ -45,11 +99,11 @@
 		  text-decoration: none;
 		}
 
-		li a:hover:not(.active) {
+		.menu-list a:hover:not(.active) {
 		  background-color: #ddd;
 		}
 
-		li a.active {
+		.menu-list a.active {
 		  color: white;
 		  background-color: #4da6ff;
 		}
@@ -188,29 +242,45 @@
 							<ul class="has-navigation">
 							
 								<div class="containerdash">
-								<li class>
-									<a href="#">Home</a>
+								<li class="menu-list">
+									<a href="#" class="active" id="Overview">Overview</a>
 								</li>
 								
-								<li class>
-									<a href="#">Overview</a>
+								<li class="menu-list">
+									<a href="#" id="Publication">Publication</a>
+								</li>
+								<li class="menu-list">
+									<a href="#" id="Education">Education</a>
 								</li>
 								
-								<li class>
-									<a href="#"> Publications </a>
+								<li class="menu-list">
+									<a href="#" id="Awards">Awards</a>
+								</li>
+																
+								<li class="menu-list">
+									<a href="#" id="Teaching"> Teaching </a>
 								</li>
 								
-								<li class>
-									<a href="#"> Awards </a>
-								</li>
+								<?php if(isset($_SESSION['loggedin'])){?>
 								
-								<li class>
-									<a href="#" class="active"> Teaching </a>
-								</li>
+									<?php if(strcmp($_SESSION['username'], $username) == 0) {?>
+										<li class="menu-list">
+										<a href="#" id="Edit-Profile"> Edit-Profile </a>
+										</li>
+										
+										<li class="menu-list">
+										<a href="#" id="Leave-Status"> Leave-Portal </a>
+										</li>
+									<?php }?>
 								
-								<li class style="float:right; margin-right: 30px">
+								<?php } ?>
+								
+								<li class="menu-list" style="float:right; margin-right: 30px">
+									<?php if(!isset($_SESSION['loggedin'])) {?>
 									<button class="trigger" onclick="openForm()">Login</button>
-									<!--<a href="#">Login</a>-->
+								<?php }else{?>
+									<a href="template.php?q=<?php echo $_SESSION['username']; ?>""> <?php echo $_SESSION['username']; ?></a>
+								<?php }?>
 								</li>
 								</div>
 							</ul>
@@ -223,9 +293,9 @@
 			<div class="column1" style="margin-left : -120px">
 				<div class="card">
 				  <img src="Images/Person.png" alt="John" style="width:100%">
-				  <h1>John Doe</h1>
-				  <p class="title">CEO & Founder, Example</p>
-				  <p>Harvard University</p>
+				  <h1><?php echo $name; ?></h1>
+				  <p class="title"><?php echo $email; ?></p>
+				  <p>IIT Ropar</p>
 				  <div style="margin: 24px 0;">
 					<a href="#"><i class="fa fa-dribbble"></i></a> 
 					<a href="#"><i class="fa fa-twitter"></i></a>  
@@ -235,8 +305,51 @@
 				</div>
 			</div>
 			<div class="column2">
-				<h2>Column 2</h2>
-				<p>This column will contain the content which is clicked like research, Grants, Publications etc.</p>
+				<div class="Overview" style="display: block;">
+					<p><?php echo $overview; ?></p>
+				</div>
+				
+				<div class="Publication" style="display: none;">
+					<ul>
+					<?php foreach($publications as $pub){?>
+					<li>
+					<h2 style="color: blue"><?php echo $pub['Paper']; ?> </h2>
+					<p><?php echo $pub['Conf'];?></p>
+					</li>
+					<?php }?>
+					</ul>
+				</div>
+				<div class="Education" style="display: none">
+					<ul>
+					<?php foreach($education as $edu){?>
+					<li>
+					<h2 style="color: blue"><?php echo $edu['Study']; ?> </h2>
+					<p><?php echo $edu['Year'];?></p>
+					</li>
+					<?php }?>
+					</ul>
+				</div>
+				<div class="Awards" style="display: none">
+					<ul>
+					<?php foreach($awards as $aw){?>
+					<li>
+					<h2 style="color: blue"><?php echo $aw['Title']; ?> </h2>
+					<p><?php echo $aw['Date'];?></p>
+					</li>
+					<?php }?>
+					</ul>
+				</div>
+				<div class="Teaching" style="display: none">
+					<ul>
+					<?php foreach($teaching as $te){?>
+					<li>
+					<h2 style="color: blue"><?php echo $te['Course']; ?> </h2>
+					<p><?php echo $te['Date'];?></p>
+					</li>
+					<?php }?>
+					</ul>
+				</div>				
+				
 	  		</div>
 		
 		</div>
@@ -248,7 +361,7 @@
 		<div class="modal-content">
 		    <h2>Login</h2>
 		    <p>Please fill in your credentials to login.</p>
-		    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+		    <form>
 		        <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
 		            <label>Username</label>
 		            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
@@ -272,8 +385,34 @@
 		</div>
     </div>
 	
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	<script>
-	
+
+		
+		var div = document.getElementsByClassName("containerdash");
+
+		var btns = div[0].getElementsByTagName("a");
+		for (var i = 0; i < btns.length; i++) {
+			  btns[i].addEventListener("click", function() {
+				var current = document.getElementsByClassName("active");
+
+				var currentDisp = current[0].id
+				// If there's no active class
+				if (current.length > 0) {
+				  current[0].className = current[0].className.replace("active", "");
+				}
+
+				// Add the active class to the current/clicked button
+				this.className += " active";
+				document.getElementsByClassName(currentDisp)[0].style.display= "none";
+				document.getElementsByClassName(this.id)[0].style.display= "block";
+				
+				
+		  });
+		}
+
+		
+		
 		
 		function openForm() {
 		
@@ -286,6 +425,30 @@
 		  document.getElementById("myForm").style.display = "none";
 		  document.getElementById("Fun").style.opacity = 1;
 		}
+		
+		$(function () {
+
+		    $('form').on('submit', function (e) {
+
+		      e.preventDefault();
+
+		      $.ajax({
+		        type: 'post',
+		        url: 'login.php',
+		        data: $('form').serialize(),
+		        success: function (result) {
+		        	
+		          if(result == 1)
+		          	location.reload();
+		          	//alert(result);
+		          else
+		          	$(".help-block").text("Incorrect Username/Passoword");
+		        }
+		      });
+
+		    });
+
+      	});
 		/*
 		var modal = document.querySelector(".modal");
 		var trigger = document.querySelector(".trigger");

@@ -1,3 +1,10 @@
+<?php
+	
+	session_start();
+	require_once("config.php");
+	
+	
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,7 +129,11 @@
 							<div class="containerdash">
 							
 							<li class style="float:right; margin-right: 30px">
-								<button class="trigger" onclick="openForm()">Login</button>
+								<?php if(!isset($_SESSION['loggedin'])) {?>
+									<button class="trigger" onclick="openForm()">Login</button>
+								<?php }else{?>
+									<a href="template.php?q=<?php echo $_SESSION['username']; ?>""> <?php echo $_SESSION['username']; ?></a>
+								<?php }?>
 							</li>
 							</div>
 						</ul>
@@ -209,7 +220,30 @@
 		<div class="modal-content">
 		    <h2>Login</h2>
 		    <p>Please fill in your credentials to login.</p>
+		    <!--
 		    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+		        <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+		            <label>Username</label>
+		            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
+		            <span class="help-block"><?php echo $username_err; ?></span>
+		        </div>    
+		        <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
+		            <label>Password</label>
+		            <input type="password" name="password" class="form-control">
+		            <span class="help-block"><?php echo $password_err; ?></span>
+		        </div>
+		        <div class="form-group">
+		            <input type="submit" class="btn btn-primary" value="Login">
+		        </div>
+		        
+		        <div class="form-group">
+		            <button type="button" class="btn cancel" onclick="closeForm()" style="background-color:red;">Close</button>
+		        </div>
+		        
+		        <p>Don't have an account? <a href="phpinfo.php">Sign up now</a>.</p>
+		    </form>
+		    -->
+		    <form>
 		        <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
 		            <label>Username</label>
 		            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
@@ -233,6 +267,7 @@
 		</div>
     </div>
 	
+	 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	<script>
 	
 		
@@ -247,6 +282,31 @@
 		  document.getElementById("myForm").style.display = "none";
 		  document.getElementById("Fun").style.opacity = 1;
 		}
+		
+		$(function () {
+
+		    $('form').on('submit', function (e) {
+
+		      e.preventDefault();
+
+		      $.ajax({
+		        type: 'post',
+		        url: 'login.php',
+		        data: $('form').serialize(),
+		        success: function (result) {
+		        	
+		          if(result == 1)
+		          	location.reload();
+		          	//alert(result);
+		          else
+		          	$(".help-block").text("Incorrect Username/Passoword");
+		        }
+		      });
+
+		    });
+
+      	});
+		
 		/*
 		var modal = document.querySelector(".modal");
 		var trigger = document.querySelector(".trigger");
