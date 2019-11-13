@@ -2,43 +2,30 @@ DROP DATABASE IF EXISTS faculty_portal;
 CREATE DATABASE faculty_portal;
 \c faculty_portal;
 
-
+-- The department table will have the names of the branches like: CSE, EE, ME etc
+CREATE TABLE Department (
+  Id SERIAL,
+  name Varchar,
+  PRIMARY KEY( Id )
+);
 
 -- Faculty table will store the details of all the existing faculties,HODs,Cross-cutting Faculties, Director etc
 CREATE TABLE Faculty (
-  Id Integer,
+  Id SERIAL,
   Name varchar,
-  dept_id Integer,
+  dept_id Integer REFERENCES Department(Id),
   Email varchar,
   Profile varchar,
   Joined_On timestamp,
   Left_On timestamp,
-  Leave_id integer,
-  PRIMARY KEY(Id)
-  
-);
-
--- Store USernames and passwords for Faculty
-CREATE TABLE Users (
-
-	Id Integer REFERENCES Faculty(Id),
-	Name varchar,
-	username varchar,
-	password varchar
-
-);
-
--- The department table will have the names of the branches like: CSE, EE, ME etc
-CREATE TABLE Department (
-  Id Integer,
-  name Varchar,
+  Route_Id Integer,
   PRIMARY KEY( Id )
 );
 
 -- The table POR will store the names of all the position of responsibilties like Dean Academic Affairs, etc.
 CREATE TABLE POR (
-  Id Integer,
-  name Varchar,
+  Id SERIAL,
+  Name Varchar,
   PRIMARY KEY( Id )
 );
 
@@ -51,7 +38,7 @@ CREATE TABLE Positions (
 
 -- This table will be used for dynamic routing
 CREATE TABLE Route (
-  Id Integer,
+  Id SERIAL,
   applicant Integer REFERENCES Positions(Id),
   sender Integer REFERENCES Positions(Id),
   recipient Integer REFERENCES Positions(Id)
@@ -64,8 +51,6 @@ CREATE TABLE Faculty_position (
   PRIMARY KEY(Faculty_id)
 );
 
-
-
 -- The HOD table will store the IDs and tenures of the faculty who were appointed the HOD of a given department
 CREATE TABLE HOD (
   dept_id Integer REFERENCES Department(Id) ,
@@ -77,7 +62,7 @@ CREATE TABLE HOD (
 
 -- This table will store the IDs of faculties who have served as HOD at some point in time
 CREATE TABLE HOD_History (
-  id Integer,
+  id SERIAL,
   dept_id Integer,
   faculty_id Varchar,
   start_date timestamp,
@@ -86,7 +71,7 @@ CREATE TABLE HOD_History (
 
 -- The HOD table will store the IDs and tenures of the faculty who are appointed at a POR 
 CREATE TABLE CCF (
-  id Integer,
+  id SERIAL,
   POR_id Integer REFERENCES POR(Id),
   faculty_id Integer REFERENCES Faculty(Id),
   start_date timestamp,
@@ -96,7 +81,7 @@ CREATE TABLE CCF (
 
 -- This table will store the IDs of faculties who have served at any POR at some point in time
 CREATE TABLE CCF_History (
-  id Integer,
+  id SERIAL,
   POR_id Integer,
   faculty_id Integer,
   start_date timestamp,
@@ -105,7 +90,7 @@ CREATE TABLE CCF_History (
 
 -- This table will store the details of leaves of corresponding leave IDs of faculty
 CREATE TABLE Leaves (
-  Id Integer,
+  Id Integer REFERENCES Faculty(Id),
   leaves_left Integer,
   total_leaves Integer,
   cur_leave_app_id boolean,
