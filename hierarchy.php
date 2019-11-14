@@ -135,6 +135,13 @@
 									<a href="template.php?q=<?php echo $_SESSION['username']; ?>""> <?php echo $_SESSION['username']; ?></a>
 								<?php }?>
 							</li>
+							<?php if(isset($_SESSION['loggedin'])) {?>
+							
+							<li class style="float:right; margin-right: 30px">
+								<button class="Logout">Logout</button>
+							</li>
+							
+							<?php } ?>
 							</div>
 						</ul>
 			</div>
@@ -282,6 +289,17 @@
 		  document.getElementById("myForm").style.display = "none";
 		  document.getElementById("Fun").style.opacity = 1;
 		}
+		
+		$(function () {
+			$(".Logout").click(function(){
+			  $.ajax({
+				  	url: "logout.php", 
+				  	success: function(){
+						location.reload();
+				  	}
+			  });
+			});
+		});
 		
 		$(function () {
 

@@ -36,6 +36,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 		$options = [];
         $query = new MongoDB\Driver\Query($filter, $options);
 		$cursor = $manager->executeQuery('faculty_portal.users', $query);
+		$result = pg_query($pg, "select faculty.Id from Faculty, Users where Faculty.Id = Users.Id and Users.username='$username' and Users.password='$password'");
+		$resultArr = pg_fetch_all($result);
         $lcnt=0;
         
         foreach ($cursor as $entry)
@@ -52,6 +54,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             // Store data in session variables
             $_SESSION["loggedin"] = true;
             $_SESSION["username"] = $username;
+            $_SESSION["facultyid"] = $resultArr[0]['id'];
             #header("location: dashboard.php");
         }
     }

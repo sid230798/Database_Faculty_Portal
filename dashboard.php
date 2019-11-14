@@ -33,6 +33,10 @@
 	}*/
 	/*echo $cursor->ModuleAccountInfo[0]->username*/
 	
+	$result = pg_query($pg, "select faculty.Id from Faculty, Users where Faculty.Id = Users.Id and Users.username='a' and Users.password='12qwaszx'");
+	$resultArr = pg_fetch_all($result);
+	echo $resultArr[0]['id'];
+	/*
 	$publication = array();
 	foreach($cursor as $entry){
 		 $c = get_object_vars($entry);
@@ -44,6 +48,7 @@
 	
 	foreach($publication as $row)
 		echo "Yes";
+	*/
 	#print_r($publication)
 	
 	
