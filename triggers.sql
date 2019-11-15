@@ -155,6 +155,7 @@ declare
   receiver_fac RECORD;
 begin
 
+ UPDATE Leaves set cur_leave_app_id = 1 where id = NEW.leave_id;
  -- Get the position ID
  SELECT into var * FROM Faculty_position WHERE Faculty_id = NEW.leave_id;
  
@@ -192,35 +193,13 @@ execute procedure T_insert_leave_request();
 
 create or replace function T_update_leave_request() returns trigger as
 $BODY$
-declare 
-  var RECORD;
-  var2 RECORD;
-  app_fac RECORD;
-  receiver_fac RECORD;
 begin
 
- -- Get the position ID
- SELECT into var * FROM Faculty_position WHERE Faculty_id = NEW.leave_id;
- 
- -- start the routing 
- SELECT into var2 * FROM Route WHERE applicant = var.Position_Id and sender = var.Position_Id;
-
- SELECT into app_fac * FROM Faculty WHERE Id = NEW.leave_id;
-
- -- possible positions: 1:Faculty, 2:HOD, 3:Associate Dean, 4:Dean, 5:Director
- IF var2.recipient = 1 THEN
-  RAISE NOTICE 'Invalid Position. Faculty cannot approve leave from another faculty.';
- ELSIF var2.recipient = 2 THEN
-  SELECT into receiver_fac * FROM HOD WHERE dept_id = app_fac.dept_id;
- ELSIF var2.recipient = 3 OR var2.recipient = 4 OR var2.recipient = 5 THEN
-  SELECT into receiver_fac * FROM CCF WHERE Position_id = var.Position_id;
- ELSE
-  RAISE NOTICE 'Invalid Position. The targeted person is Unknown.';
- END IF;
-
- INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On, comments) 
- VALUES (NEW.Id , NEW.leave_id, NEW.leave_id, receiver_fac.faculty_id, 'PENDING' , now() , NEW.comments);
+  IF NEW.status = 'MODIFIED' THEN
+    UPDATE Leave_Approvals set status = 'MODIFIED' , comments = NEW.comments WHERE LR_id = NEW.Id AND status = 'RENEW';
+  END IF;
  RETURN NEW;
+
 end;
 $BODY$
 language plpgsql;
@@ -228,7 +207,7 @@ language plpgsql;
 create trigger on_update_leave_request
 after insert on Leave_Request
 for each row 
-execute procedure T_insert_leave_request();
+execute procedure T_update_leave_request();
 
 
 -- ****************************************************************************
