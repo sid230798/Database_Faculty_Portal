@@ -173,7 +173,7 @@
 							<?php if(isset($_SESSION['loggedin'])) {?>
 							
 							<li class style="float:right; margin-right: 30px">
-								<button class="Logout">Logout</button>
+								<a href="logout.php" class="Logout">Logout</a>
 							</li>
 							
 							<?php } ?>

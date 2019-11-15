@@ -265,7 +265,7 @@
 								
 									<?php if(strcmp($_SESSION['username'], $username) == 0) {?>
 										<li class="menu-list">
-										<a href="#" id="Edit-Profile"> Edit-Profile </a>
+										<a href="edit_profile.php" id="Edit-Profile"> Edit-Profile </a>
 										</li>
 										
 										<li class="menu-list">
@@ -285,7 +285,7 @@
 								<?php if(isset($_SESSION['loggedin'])) {?>
 							
 								<li class style="float:right; margin-right: 30px">
-									<button class="Logout">Logout</button>
+									<a href="logout.php" class="Logout">Logout</a>
 								</li>
 								
 								<?php } ?>
