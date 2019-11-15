@@ -15,24 +15,25 @@ CREATE TABLE Faculty (
   Name varchar,
   dept_id Integer REFERENCES Department(Id),
   Email varchar,
-  Profile varchar,
+  -- Profile varchar,
   Joined_On timestamp,
   Left_On timestamp,
-  Route_Id Integer,
+  username varchar UNIQUE,
+  password Varchar,
   PRIMARY KEY( Id )
 );
 
 -- The table POR will store the names of all the position of responsibilties like Dean Academic Affairs, etc.
-CREATE TABLE POR (
-  Id SERIAL,
-  Name Varchar,
-  PRIMARY KEY( Id )
-);
+-- CREATE TABLE POR (
+--   Id SERIAL,
+--   Name Varchar,
+--   PRIMARY KEY( Id )
+-- );
 
 -- This table will store positions like: "FACULTY","HOD","DEAN_ACADEMIC_AFFAIRS","DIRECTOR" etc
 CREATE TABLE Positions (
   Id Integer,
-  name Varchar,
+  name Varchar UNIQUE,
   PRIMARY KEY(Id)
 );
 
@@ -66,13 +67,14 @@ CREATE TABLE HOD_History (
   dept_id Integer,
   faculty_id Varchar,
   start_date timestamp,
-  end_date timestamp
+  end_date timestamp,
+  rem_date timestamp
 );
 
 -- The HOD table will store the IDs and tenures of the faculty who are appointed at a POR 
 CREATE TABLE CCF (
   id SERIAL,
-  POR_id Integer REFERENCES POR(Id),
+  Position_id Integer REFERENCES Positions(Id),
   faculty_id Integer REFERENCES Faculty(Id),
   start_date timestamp,
   end_date timestamp,
@@ -82,10 +84,11 @@ CREATE TABLE CCF (
 -- This table will store the IDs of faculties who have served at any POR at some point in time
 CREATE TABLE CCF_History (
   id SERIAL,
-  POR_id Integer,
+  Position_id Integer,
   faculty_id Integer,
   start_date timestamp,
-  end_date timestamp
+  end_date timestamp,
+  rem_date timestamp
 );
 
 -- This table will store the details of leaves of corresponding leave IDs of faculty
@@ -93,25 +96,22 @@ CREATE TABLE Leaves (
   Id Integer REFERENCES Faculty(Id),
   leaves_left Integer,
   total_leaves Integer,
-  cur_leave_app_id boolean,
+  cur_leave_app_id Integer,
   next_year_leaves Integer,
   next_year_leaves_left Integer,
   PRIMARY KEY (Id)
 );
 
--- Each faculty will have a unique leave ID which is constant once assigned and used to find all his leaves
-CREATE TABLE Leave_faculty (
-  Faculty_id Integer REFERENCES Faculty(Id) ,
-  Leave_Id Integer UNIQUE NOT NULL REFERENCES Leaves(Id)
-);
+CREATE TYPE STATUS AS ENUM( 'PENDING' , 'REJECTED' , 'APPROVED' , 'RENEW', 'MODIFIED');
 
 -- The leave request table will store the IDs of the current leave applications 
 CREATE TABLE Leave_Request (
-  Id Integer,
+  Id SERIAL ,
   leave_id Integer REFERENCES Leaves(Id),
-  status Varchar,
+  status STATUS,
   start_date timestamp,
   end_date timestamp,
+  comments text,
   PRIMARY KEY(Id)
 );
 
@@ -121,7 +121,27 @@ CREATE TABLE Leave_Approvals (
   applicant Integer REFERENCES Faculty(Id),
   sender Integer REFERENCES Faculty(Id),
   recipient Integer REFERENCES Faculty(Id),
-  status Varchar,
+  status STATUS,
   signed_On timestamp,
   comments text
 );
+
+
+
+-- TODO
+-- create or replace function T_delete_faculty() returns trigger as
+-- $BODY$
+-- declare
+--   var RECORD;
+-- begin
+
+--  UPDATE Faculty SET Left_On = now() WHERE id = OLD.id;
+--  RETURN NEW;
+-- end;
+-- $BODY$
+-- language plpgsql;
+
+-- create trigger on_delete_faculty
+-- instead of delete on Faculty
+-- for each row 
+-- execute procedure T_delete_faculty();
