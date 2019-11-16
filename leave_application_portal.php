@@ -1,3 +1,65 @@
+<?php
+
+require 'config.php';
+
+session_start();
+
+$error = "";
+
+if (!isset($_SESSION['loggedin'])) {
+	header('Location: login.php');
+	exit();
+}
+
+// ******************************** this is for my leave requests
+if (isset($_SESSION['facultyID'])) {
+
+	$sql = "SELECT * FROM Leave_Request WHERE leave_id="."".$_SESSION['facultyID'].";";
+
+	$result = pg_query($manager, $sql);
+	
+	while( $row = pg_fetch_array($result) ){
+		// here $row is each leave_Request for this faculty which will be listed out .. one of these will be the current leave request
+		echo $row['leave_id'];
+		echo '<br>';
+		$sql = "SELECT * FROM Leave_Approvals WHERE LR_id = '".$row['id']."';";
+		$result2 = pg_query( $manager,$sql );
+		while( $row2 = pg_fetch_array($result2) ){
+			echo $row2['lr_id'];
+			echo '<br>';
+			// this is each leave_approval row which needs to be printed on clicking view
+		}
+	}
+}
+
+// ******************************** this is for request approved by me
+
+if (isset($_SESSION['facultyID'])) {
+
+	$sql = "SELECT * FROM Leave_Request WHERE Id IN (SELECT distinct(lr_id) FROM leave_approvals WHERE recipient="."".$_SESSION['facultyID'].");";
+
+	$result = pg_query($manager, $sql);
+	
+	while( $row = pg_fetch_array($result) ){
+		// here $row is each leave_Request for this faculty which will be listed out .. one of these will be the current leave request
+		echo $row['leave_id'];
+		echo '<br>';
+		$sql = "SELECT * FROM Leave_Approvals WHERE LR_id = '".$row['id']."';";
+		$result2 = pg_query( $manager,$sql );
+
+		while( $row2 = pg_fetch_array($result2) ){
+			echo $row2['lr_id'];
+			echo '<br>';
+			// this is each leave_approval row which needs to be printed on clicking view
+		}
+	}
+}
+
+
+// ******************************** 
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,3 +130,4 @@
 	</div>
 </body>
 </html>
+

@@ -151,6 +151,8 @@ $BODY$
 declare 
   var RECORD;
   var2 RECORD;
+  var3 RECORD;
+  rec Integer;
   app_fac RECORD;
   receiver_fac RECORD;
 begin
@@ -170,13 +172,43 @@ begin
  ELSIF var2.recipient = 2 THEN
   SELECT into receiver_fac * FROM HOD WHERE dept_id = app_fac.dept_id;
  ELSIF var2.recipient = 3 OR var2.recipient = 4 OR var2.recipient = 5 THEN
-  SELECT into receiver_fac * FROM CCF WHERE Position_id = var.Position_id;
+  SELECT into receiver_fac * FROM CCF WHERE Position_id = var2.recipient;
  ELSE
   RAISE NOTICE 'Invalid Position. The targeted person is Unknown.';
  END IF;
 
- INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On, comments) 
- VALUES (NEW.Id , NEW.leave_id, NEW.leave_id, receiver_fac.faculty_id, 'PENDING' , now() , NEW.comments);
+ INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On) 
+ VALUES (NEW.Id , NEW.leave_id, NEW.leave_id, receiver_fac.faculty_id, 'PENDING' , now());
+
+ -- initiate the rest of the path
+ LOOP
+     -- start the routing 
+
+     rec = receiver_fac.faculty_id;
+
+     SELECT into var3 * FROM Route WHERE applicant = var.Position_Id and sender = var2.recipient;
+
+     EXIT WHEN Count(var3) = 0;
+
+     -- possible positions: 1:Faculty, 2:HOD, 3:Associate Dean, 4:Dean, 5:Director
+     IF var3.recipient = 1 THEN
+      RAISE NOTICE 'Invalid Position. Faculty cannot approve leave from another faculty.';
+      EXIT WHEN 1<2;
+     ELSIF var3.recipient = 2 THEN
+      SELECT into receiver_fac * FROM HOD WHERE dept_id = app_fac.dept_id;
+     ELSIF var3.recipient >= 3 THEN
+      SELECT into receiver_fac * FROM CCF WHERE Position_id = var3.recipient;
+     ELSE
+      EXIT WHEN 1<2;
+     END IF;
+
+     INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On) 
+     VALUES (NEW.Id , NEW.leave_id, rec , receiver_fac.faculty_id, 'INITIATED' , now());
+
+     var2.recipient = var3.recipient;
+
+ END LOOP;
+
  RETURN NEW;
 end;
 $BODY$
@@ -196,7 +228,7 @@ $BODY$
 begin
 
   IF NEW.status = 'MODIFIED' THEN
-    UPDATE Leave_Approvals set status = 'MODIFIED' , comments = NEW.comments WHERE LR_id = NEW.Id AND status = 'RENEW';
+    UPDATE Leave_Approvals set status = 'MODIFIED' WHERE lr_id = OLD.Id AND status = 'RENEW';
   END IF;
  RETURN NEW;
 
@@ -205,7 +237,7 @@ $BODY$
 language plpgsql;
 
 create trigger on_update_leave_request
-after insert on Leave_Request
+after update on Leave_Request
 for each row 
 execute procedure T_update_leave_request();
 
@@ -224,30 +256,16 @@ begin
 
  IF NEW.status = 'REJECTED' THEN
 
-    UPDATE Leave_Request SET status = 'REJECTED', comments = NEW.comments WHERE ID = NEW.LR_id;
+    UPDATE Leave_Request SET status = 'REJECTED' WHERE ID = NEW.LR_id;
     UPDATE Leaves SET cur_leave_app_id = 0 WHERE ID = NEW.leave_id;
 
  ELSIF NEW.status = 'APPROVED' THEN
 
-    SELECT into var2 * FROM Route WHERE applicant = NEW.applicant and sender = var.recipient;
-    SELECT into app_fac * FROM Faculty WHERE Id = NEW.applicant;
-
-    IF var2.recipient = 1 THEN
-      RAISE NOTICE 'Invalid Position. Faculty cannot approve leave from another faculty.';
-    ELSIF var2.recipient = 2 THEN
-      SELECT into receiver_fac * FROM HOD WHERE dept_id = app_fac.dept_id;
-    ELSIF var2.recipient = 3 OR var2.recipient = 4 OR var2.recipient = 5 THEN
-      SELECT into var * FROM Faculty_position WHERE Faculty_id = var2.recipient;
-      SELECT into receiver_fac * FROM CCF WHERE Position_id = var.Position_id;
-    ELSE
-      RAISE NOTICE 'Invalid Position. The targeted person is Unknown.';
-    END IF;
-    
-    INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On, comments) 
-    VALUES (NEW.LR_id , NEW.applicant, NEW.recipient, receiver_fac.faculty_id, 'PENDING' , now() , NEW.comments);
+    UPDATE Leave_Approvals set status = 'PENDING' where LR_id = NEW.LR_id AND applicant = NEW.applicant AND sender = NEW.recipient;
 
   ELSIF NEW.status = 'RENEW' THEN
     UPDATE Leave_Request SET status = 'RENEW' WHERE id = NEW.LR_id;
+
   END IF;
 
   RETURN NEW;

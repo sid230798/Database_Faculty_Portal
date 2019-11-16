@@ -102,7 +102,7 @@ CREATE TABLE Leaves (
   PRIMARY KEY (Id)
 );
 
-CREATE TYPE STATUS AS ENUM( 'PENDING' , 'REJECTED' , 'APPROVED' , 'RENEW', 'MODIFIED');
+CREATE TYPE STATUS AS ENUM( 'INITIATED', 'PENDING' , 'REJECTED' , 'APPROVED' , 'RENEW', 'MODIFIED');
 
 -- The leave request table will store the IDs of the current leave applications 
 CREATE TABLE Leave_Request (
@@ -116,7 +116,7 @@ CREATE TABLE Leave_Request (
 );
 
 CREATE TABLE Leave_Approvals (
-  Id Integer,
+  Id SERIAL,
   LR_id Integer REFERENCES Leave_Request(Id),
   applicant Integer REFERENCES Faculty(Id),
   sender Integer REFERENCES Faculty(Id),
@@ -127,21 +127,3 @@ CREATE TABLE Leave_Approvals (
 );
 
 
-
--- TODO
--- create or replace function T_delete_faculty() returns trigger as
--- $BODY$
--- declare
---   var RECORD;
--- begin
-
---  UPDATE Faculty SET Left_On = now() WHERE id = OLD.id;
---  RETURN NEW;
--- end;
--- $BODY$
--- language plpgsql;
-
--- create trigger on_delete_faculty
--- instead of delete on Faculty
--- for each row 
--- execute procedure T_delete_faculty();
