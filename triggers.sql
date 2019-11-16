@@ -184,7 +184,7 @@ begin
  LOOP
      -- start the routing 
 
-     rec = receiver_fac.faculty_id;
+     rec := receiver_fac.faculty_id;
 
      SELECT into var3 * FROM Route WHERE applicant = var.Position_Id and sender = var2.recipient;
 
@@ -205,7 +205,7 @@ begin
      INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On) 
      VALUES (NEW.Id , NEW.leave_id, rec , receiver_fac.faculty_id, 'INITIATED' , now());
 
-     var2.recipient = var3.recipient;
+     var2.recipient := var3.recipient;
 
  END LOOP;
 
@@ -252,6 +252,7 @@ declare
   var2 RECORD;
   app_fac RECORD;
   receiver_fac RECORD;
+  v_cnt numeric;
 begin
 
  IF NEW.status = 'REJECTED' THEN
@@ -260,8 +261,14 @@ begin
     UPDATE Leaves SET cur_leave_app_id = 0 WHERE ID = NEW.leave_id;
 
  ELSIF NEW.status = 'APPROVED' THEN
-
+    v_cnt := 0;
     UPDATE Leave_Approvals set status = 'PENDING' where LR_id = NEW.LR_id AND applicant = NEW.applicant AND sender = NEW.recipient;
+    GET DIAGNOSTICS v_cnt = ROW_COUNT;
+
+    -- when all approvals are done
+    IF v_cnt = 0 THEN
+      UPDATE Leave_Request set status = 'APPROVED' WHERE id = NEW.LR_id;
+    END IF;
 
   ELSIF NEW.status = 'RENEW' THEN
     UPDATE Leave_Request SET status = 'RENEW' WHERE id = NEW.LR_id;

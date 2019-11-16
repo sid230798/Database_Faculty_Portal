@@ -1,13 +1,6 @@
 INSERT INTO Department (Name) VALUES ('Computer Science');
 INSERT INTO Department (Name) VALUES ('Electrical');
 INSERT INTO Department (Name) VALUES ('Mechanical');
--- INSERT INTO Department (Name) VALUES ('Civil');
--- INSERT INTO Department (Name) VALUES ('Chemical');
--- INSERT INTO Department (Name) VALUES ('Metallurgy');
-
--- INSERT INTO POR (Name) VALUES ('Dean Faculty Affairs,');
--- INSERT INTO POR (Name) VALUES ('Associate Dean Faculty Affairs');
--- INSERT INTO POR (Name) VALUES ('Director');
 
 
 INSERT INTO Positions (Id, Name) VALUES ( 1,'Faculty' );
@@ -33,7 +26,6 @@ INSERT INTO faculty (Name, dept_id, Email, Joined_On, username, password) VALUES
 INSERT INTO faculty (Name, dept_id, Email, Joined_On, username, password) VALUES ('2016csb1068', 2, '2016csb1068@iitrpr.ac.in', '2015-04-01', 'N', 'prerna');
 
 
-
 INSERT INTO Route (applicant, sender, recipient) VALUES (1,1,2);
 INSERT INTO Route (applicant, sender, recipient) VALUES (1,2,4);
 INSERT INTO Route (applicant, sender, recipient) VALUES (2,2,5);
@@ -51,4 +43,11 @@ INSERT INTO CCF (Position_id, Faculty_Id, start_date, end_date) VALUES (3,12,'20
 INSERT INTO CCF (Position_id, Faculty_Id, start_date, end_date) VALUES (4,13,'2017-07-01', '2019-07-01');
 INSERT INTO CCF (Position_id, Faculty_Id, start_date, end_date) VALUES (5,14,'2017-07-01', '2019-07-01');
 
+-- Faculty
+INSERT INTO leave_request(leave_id,status,start_date,end_date,comments) VALUES ( 4,'PENDING','2019-11-09','2019-11-13','Paper Presentation in Australia');
 
+-- Faculty
+INSERT INTO leave_request(leave_id,status,start_date,end_date,comments) VALUES ( 5,'PENDING','2019-11-09','2019-11-13','Need to go home for a wedding');
+
+-- HOD
+INSERT INTO leave_request(leave_id,status,start_date,end_date,comments) VALUES ( 3,'PENDING','2019-11-09','2019-11-13','Conference in Dubai');
