@@ -6,8 +6,8 @@ session_start();
 
 
 $_SESSION["loggedin"] = true;
-$_SESSION["username"] = 'D';
-$_SESSION["facultyID"] = 4;
+$_SESSION["username"] = 'B';
+$_SESSION["facultyID"] = 2;
 $error = "";
 
 if (!isset($_SESSION['loggedin'])) {
@@ -19,13 +19,17 @@ if (!isset($_SESSION['loggedin'])) {
 if (isset($_SESSION['facultyID'])) {
 
 	$fid = $_SESSION['facultyID'];
-	$sql = "SELECT * FROM Leave_Request WHERE leave_id='$fid' ORDER BY start_date DESC;";
+	//$sql = "SELECT * FROM Leave_Request WHERE leave_id='$fid' ORDER BY start_date DESC;";
 
+	$sql = "SELECT * FROM Leave_Request WHERE Id IN (SELECT distinct(lr_id) FROM leave_approvals WHERE recipient="."".$_SESSION['facultyID'].");";
 	$result = pg_query($pg, $sql);
 	$leave_applications = array();
 	
+	$is_checkbox = array();
+	$tmp_checkbox = false;
 	$resultArr = pg_fetch_all($result);
 	foreach($resultArr as $row){
+		
 		// here $row is each leave_Request for this faculty which will be listed out .. one of these will be the current leave request
 		$per_leave_application = array();
 		/*Get the required fields for current faculty*/
@@ -57,10 +61,18 @@ if (isset($_SESSION['facultyID'])) {
 			$tmp['FacultyName'] = $desg_result[0]['fname'];
 			$tmp['Date'] = $row2['signed_on'];
 			$tmp['Comment'] = $row2['comments'];
+			$tmp['isSubmit'] = false;		
+						
+			if($_SESSION["facultyID"] == $tmp['FacultyID'] and strcmp($tmp['Status'], 'PENDING') == 0){
+				$tmp_checkbox = true;
+				$tmp['isSubmit'] = true;
+			}
+			
 			array_push($per_leave_application, $tmp);
 			// this is each leave_approval row which needs to be printed on clicking view
 		}
 		
+		array_push($is_checkbox, $tmp_checkbox);
 		array_push($leave_applications, $per_leave_application);
 	}
 	
@@ -116,26 +128,28 @@ if (isset($_SESSION['facultyID'])) {
 
 	<div class="container">
 		<ul>
-			<li> <h2 style="color: Tomato; margin-left: -40px;">Leave Application's</h2> </li>
+			<li> <h2 style="color: Tomato; margin-left: -40px;">Leave Approval's</h2> </li>
 			<li style="float: right;"> <a href="#">Logout</a></li>
 			<li style="float: right;padding-right: 20px"> <a href="#">Username</a></li>
 		</ul>
 	</div>
 	<div class="container">
-		<!-- Apply Button -->
+		<!-- Apply Button
 		<div class="form-group">
 			<form action="application.php" method="post">
 				<input type="submit" class="btn btn-primary" value="Apply">
 			</form>
 		</div>
+		-->
 		<hr>
 		<?php for($idx=0; $idx < count($leave_applications); $idx++){?>
-			<!-- Edit comment and status -->
-			<form action="<?php if($idx == 0){?>edit.php<?php }?>" method="post">
+			<!-- Edit comment and status 
+			<form action="<?php if($idx == 0){?>edit.php<?php }?>" method="post">-->
 				<div class="form-group">
 					<ul>
 						<li style="margin-left: -40px;">
-							<?php if(strcmp($leave_applications[$idx][0]['Status'], 'RENEW') == 0){ ?><input type="submit" class="btn btn-primary" value="Edit"><?php } ?>
+							<?php if($is_checkbox[$idx] == true) {?> Please click Show button to add your comments and sign the Leave Request.<?php } ?>
+							<!--<?php if(strcmp($leave_applications[$idx][0]['Status'], 'RENEW') == 0){ ?><input type="submit" class="btn btn-primary" value="Edit"><?php } ?>-->
 						</li>
 						<li style="float: right">
 							<label>Overall-Status: </label>
@@ -143,7 +157,7 @@ if (isset($_SESSION['facultyID'])) {
 						</li>
 					</ul>
 				</div>
-			</form>	
+			<!--</form>-->	
 				<div class="form-group">				
 					<label style="color: blue"> Leave Application Id : <?php echo $leave_applications[$idx][0]['LeaveID'];?> </label><br>
 					<label style="color: blue"> Faculty : <?php echo $leave_applications[$idx][0]['FacultyName'];?> </label><br>
@@ -152,18 +166,27 @@ if (isset($_SESSION['facultyID'])) {
 				<div class="form-group">
 					
 					<label> Comment </label>
-					<input type="text" name="Status" class="form-control" value="<?php echo $leave_applications[$idx][0]['Comment'];?>" readonly><br>
+					<input type="text" name="Comment" class="form-control" value="<?php echo $leave_applications[$idx][0]['Comment'];?>" readonly><br>
 					
 				</div>
 				<!-- Repeat this for complete trail -->
 				<div class="Trail<?php echo $leave_applications[$idx][0]['LeaveID'];?>" style="display: none">
 					<?php for($cnt = 1; $cnt < count($leave_applications[0]); $cnt++){?>
-						
+					<?php if($leave_applications[$idx][$cnt]['isSubmit']){?><form action="" method="post"><?php }?>	
 						<div class="form-group">
+						<input type="hidden" name="Leave_id" value="<?php echo $leave_applications[$idx][0]['LeaveID'];?>">
 						<ul>
 							<li style="float: right">
 								<label>Status: </label>
-								<input type="text" name="Status" class="form-control" value="<?php echo $leave_applications[$idx][$cnt]['Status']; ?>" readonly>
+								<!--  -->
+								<?php if($leave_applications[$idx][$cnt]['isSubmit']){ ?>
+									<br>
+									<input type="radio" name="Status" value="APPROVED" class="btn btn-primary">Approve<br>
+									<input type="radio" name="Status" value="REJECTED" class="btn btn-primary">Reject<br>
+									<input type="radio" name="Status" value="RENEW" class="btn btn-primary">Renew<br>
+								<?php }else{ ?>								
+									<input type="text" name="Status" class="form-control" value="<?php echo $leave_applications[$idx][$cnt]['Status']; ?>" readonly>
+								<?php } ?> 
 							</li>
 							<li style="margin-left: -40px;">
 								<label style="color: blue"> <?php echo $leave_applications[$idx][$cnt]['Designation'];?> : <?php echo $leave_applications[$idx][$cnt]['FacultyName'];?> </label><br>
@@ -172,10 +195,10 @@ if (isset($_SESSION['facultyID'])) {
 							
 						</ul>				
 						<label> Comment </label>
-						<input type="text" name="Status" class="form-control" value="<?php echo $leave_applications[$idx][$cnt]['Comment'];?>" readonly><br>
+						<input type="text" name="Comment" class="form-control" value="<?php echo $leave_applications[$idx][$cnt]['Comment'];?>" <?php if($leave_applications[$idx][$cnt]['isSubmit'] == true){ echo "required";}else{echo "readonly";} ?>><br>
 						<!--<label style="color: blue"> Date :  </label>-->	
 						</div>
-						
+					<?php if($leave_applications[$idx][$cnt]['isSubmit']){?><input type="submit" name="Submit" class="btn btn-primary" value="Submit"></form><?php }?>		
 					<?php }?>
 				</div>
 				<button id="Trail<?php echo $leave_applications[$idx][0]['LeaveID'];?>" class="btn btn-primary" style="float: right" onclick="toggleDisplay(this.id)">Show</button>

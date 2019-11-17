@@ -4,8 +4,7 @@
 	session_start();
 	$_SESSION['url'] = $_SERVER['REQUEST_URI'];
 	 /*Just for Verification purposes*/
-	$username = 'a';
-	$pass = '12qwaszx';
+	$username = $_SESSION['username'];
 	
 	$filter = ['username' => $username];
 	$options = [];

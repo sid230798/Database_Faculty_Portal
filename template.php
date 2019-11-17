@@ -6,7 +6,7 @@
 	if(isset($_GET['q'])){
     
     	$username = $_GET['q'];
-    	//$username= 'a';
+    	$username= 'A';
     	$filter = ['username' => $username];
 		$options = [];
 		$query = new MongoDB\Driver\Query($filter, $options);
