@@ -64,7 +64,7 @@
     <title> Template for Use </title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <style type="text/css"">
+    <style type="text/css">
     
     	
     	.has-navigation {
@@ -269,23 +269,29 @@
 										</li>
 										
 										<li class="menu-list">
-										<a href="#" id="Leave-Status"> Leave-Portal </a>
+										<a href="#" id="Leave-Status"> My-Leave-Portal </a>
 										</li>
+										
+										<?php if($_SESSION['HOD'] == 1 || $_SESSION['CCF'] == 1) {?>
+											<li class="menu-list">
+											<a href="#" id="Leave-Status"> Leave-Approval-Portal </a>
+											</li>
+										<?php } ?> 
 									<?php }?>
 								
 								<?php } ?>
 								
-								<li class="menu-list" style="float:right; margin-right: 30px">
-									<?php if(!isset($_SESSION['loggedin'])) {?>
-									<button class="trigger" onclick="openForm()">Login</button>
+								<li class style="float:right; margin-right: 30px">
+								<?php if(!isset($_SESSION['loggedin'])) {?>
+									<a class="trigger" onclick="openForm()" style="color: blue;">Login</a>
 								<?php }else{?>
-									<a href="template.php?q=<?php echo $_SESSION['username']; ?>""> <?php echo $_SESSION['username']; ?></a>
+									<a href="logout.php" class="Logout" style="color: blue">Logout</a>
 								<?php }?>
 								</li>
 								<?php if(isset($_SESSION['loggedin'])) {?>
-							
+								
 								<li class style="float:right; margin-right: 30px">
-									<a href="logout.php" class="Logout">Logout</a>
+									<a href="template.php?q=<?php echo $_SESSION['username']; ?>"" style="color: blue"> <?php echo $_SESSION['name']; ?></a>
 								</li>
 								
 								<?php } ?>
@@ -371,7 +377,7 @@
 		    <form>
 		        <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
 		            <label>Username</label>
-		            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
+		            <input type="text" name="username" class="form-control">
 		            <span class="help-block"><?php echo $username_err; ?></span>
 		        </div>    
 		        <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">

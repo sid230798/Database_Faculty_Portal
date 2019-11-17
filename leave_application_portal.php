@@ -4,26 +4,31 @@ require 'config.php';
 
 session_start();
 
+
+$_SESSION["loggedin"] = true;
+$_SESSION["username"] = 'D';
+$_SESSION["facultyID"] = 4;
 $error = "";
 
 if (!isset($_SESSION['loggedin'])) {
-	header('Location: login.php');
+	header('Location: hierarchy.php');
 	exit();
 }
 
 // ******************************** this is for my leave requests
 if (isset($_SESSION['facultyID'])) {
 
-	$sql = "SELECT * FROM Leave_Request WHERE leave_id="."".$_SESSION['facultyID'].";";
+	$sql = "SELECT * FROM Leave_Request WHERE leave_id="."".$_SESSION['facultyID']." ORDER BY start_date DESC;";
 
-	$result = pg_query($manager, $sql);
+	$result = pg_query($pg, $sql);
 	
 	while( $row = pg_fetch_array($result) ){
 		// here $row is each leave_Request for this faculty which will be listed out .. one of these will be the current leave request
 		echo $row['leave_id'];
 		echo '<br>';
-		$sql = "SELECT * FROM Leave_Approvals WHERE LR_id = '".$row['id']."';";
-		$result2 = pg_query( $manager,$sql );
+		$sql = "SELECT * FROM Leave_Approvals WHERE LR_id = '".$row['id']."' and status != 'INITIATED';";
+		$result2 = pg_query( $pg,$sql );
+		print_r($row);
 		while( $row2 = pg_fetch_array($result2) ){
 			echo $row2['lr_id'];
 			echo '<br>';
@@ -33,7 +38,7 @@ if (isset($_SESSION['facultyID'])) {
 }
 
 // ******************************** this is for request approved by me
-
+/*
 if (isset($_SESSION['facultyID'])) {
 
 	$sql = "SELECT * FROM Leave_Request WHERE Id IN (SELECT distinct(lr_id) FROM leave_approvals WHERE recipient="."".$_SESSION['facultyID'].");";
@@ -57,7 +62,7 @@ if (isset($_SESSION['facultyID'])) {
 
 
 // ******************************** 
-
+*/
 ?>
 
 <!DOCTYPE html>
@@ -78,7 +83,15 @@ if (isset($_SESSION['facultyID'])) {
     </style>
 </head>
 <body>
-	<div class="container" style="margin-top: 100px;">
+
+	<div class="container">
+		<ul>
+			<li> <h2 style="color: Tomato; margin-left: -40px;">Leave Application's</h2> </li>
+			<li style="float: right;"> <a href="#">Logout</a></li>
+			<li style="float: right;padding-right: 20px"> <a href="#">Username</a></li>
+		</ul>
+	</div>
+	<div class="container">
 		<!-- Apply Button -->
 		<div class="form-group">
 			<form action="application.php" method="post">
@@ -108,23 +121,21 @@ if (isset($_SESSION['facultyID'])) {
 		</form>
 		<hr>
 		<!-- Repeat This for trail -->
-		<form action="#" method="post">
-			<div class="form-group">
-				<ul>				
-					<li style="margin-left: -40px;">
-					</li>
-					<li style="float: right">
-						<label>Status: </label>
-						<input type="text" name="Status" class="form-control" value="Value to be placed in Status" readonly>
-					</li>
-				</ul>
-			</div>
-			<br>
-			<div class="form-group">				
-				<label> Comment </label>
-				<input type="text" name="Status" class="form-control" value="Comment" readonly>					
-			</div>
-		</form>
+		<div class="form-group">
+			<ul>				
+				<li style="margin-left: -40px;">
+				</li>
+				<li style="float: right">
+					<label>Status: </label>
+					<input type="text" name="Status" class="form-control" value="Value to be placed in Status" readonly>
+				</li>
+			</ul>
+		</div>
+		<br>
+		<div class="form-group">				
+			<label> Comment </label>
+			<input type="text" name="Status" class="form-control" value="Comment" readonly>					
+		</div>
 		<hr>
 		<!-- Repeat above -->
 	</div>

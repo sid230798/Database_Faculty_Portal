@@ -1,4 +1,9 @@
-<?include_once("config.php");?>
+<?php 
+
+	include_once("config.php");
+	header("Location: hierarchy.php");
+
+?>
 <html>
 <head>
   <title>Welcome to MongoDB</title>

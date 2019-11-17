@@ -44,10 +44,13 @@ INSERT INTO CCF (Position_id, Faculty_Id, start_date, end_date) VALUES (4,13,'20
 INSERT INTO CCF (Position_id, Faculty_Id, start_date, end_date) VALUES (5,14,'2017-07-01', '2019-07-01');
 
 -- Faculty
+--INSERT INTO LEAVES (Id, leaves_left, total_leaves, cur_leave_app_id, next_year_leaves, next_year_leaves_left) VALUES (4, 19, 20, 1, 20, 20);
 INSERT INTO leave_request(leave_id,status,start_date,end_date,comments) VALUES ( 4,'PENDING','2019-11-09','2019-11-13','Paper Presentation in Australia');
 
 -- Faculty
+--INSERT INTO LEAVES (Id, leaves_left, total_leaves, cur_leave_app_id, next_year_leaves, next_year_leaves_left) VALUES (5, 19, 20, 1, 20, 20);
 INSERT INTO leave_request(leave_id,status,start_date,end_date,comments) VALUES ( 5,'PENDING','2019-11-09','2019-11-13','Need to go home for a wedding');
 
 -- HOD
+--INSERT INTO LEAVES (Id, leaves_left, total_leaves, cur_leave_app_id, next_year_leaves, next_year_leaves_left) VALUES (3, 19, 20, 1, 20, 20);
 INSERT INTO leave_request(leave_id,status,start_date,end_date,comments) VALUES ( 3,'PENDING','2019-11-09','2019-11-13','Conference in Dubai');

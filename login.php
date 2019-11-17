@@ -36,7 +36,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 		$options = [];
         $query = new MongoDB\Driver\Query($filter, $options);
 		$cursor = $manager->executeQuery('faculty_portal.users', $query);
-		$result = pg_query($pg, "select faculty.Id from Faculty, Users where Faculty.Id = Users.Id and Users.username='$username' and Users.password='$password'");
+		$result = pg_query($pg, "select id, name from Faculty where username='$username' and password='$password'");
 		$resultArr = pg_fetch_all($result);
         $lcnt=0;
         
@@ -54,7 +54,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             // Store data in session variables
             $_SESSION["loggedin"] = true;
             $_SESSION["username"] = $username;
-            $_SESSION["facultyid"] = $resultArr[0]['id'];
+            $_SESSION["name"] = $resultArr[0]['name'];
+            $_SESSION["facultyID"] = $resultArr[0]['id'];
+            $fid = $resultArr[0]['id'];
+            $result1 = pg_query($pg, "select count(*) from HOD where faculty_id='$fid'");
+            $result2 = pg_query($pg, "select count(*) from CCF where faculty_id='$fid'");            
+            $resultArr1 = pg_fetch_all($result1);
+            $resultArr2 = pg_fetch_all($result2);
+            $_SESSION["HOD"] = $resultArr1[0]['count'];
+            $_SESSION["CCF"] = $resultArr2[0]['count'];            
             #header("location: dashboard.php");
         }
     }

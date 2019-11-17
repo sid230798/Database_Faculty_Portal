@@ -3,6 +3,32 @@
 	session_start();
 	require_once("config.php");
 	
+	$sql = "select faculty.name as fname, positions.name, faculty.username from positions, ccf, faculty where ccf.position_id = positions.id and ccf.faculty_id = faculty.id";
+	$result = pg_query($pg, $sql);
+	$resultArr = pg_fetch_all($result);
+	$ccf = array();
+	$director = array();
+	
+	foreach($resultArr as $row){
+	
+		if(strcmp($row['name'], "Director") == 0){
+		
+			$director['name'] = $row['fname'];
+			$director['username'] = $row['username'];
+		
+		}else{
+		
+			$tmp = array();
+			$tmp['name'] = $row['fname'];
+			$tmp['username'] = $row['username'];
+			$tmp['pos_name'] = $row['name'];
+			array_push($ccf, $tmp);
+		}
+	
+	}
+	
+	#print_r($director);
+	#print_r($ccf);
 	
 ?>
 <!DOCTYPE html>
@@ -130,15 +156,15 @@
 							
 							<li class style="float:right; margin-right: 30px">
 								<?php if(!isset($_SESSION['loggedin'])) {?>
-									<button class="trigger" onclick="openForm()">Login</button>
+									<a class="trigger" onclick="openForm()" style="color: blue">Login</a>
 								<?php }else{?>
-									<a href="template.php?q=<?php echo $_SESSION['username']; ?>""> <?php echo $_SESSION['username']; ?></a>
+									<a href="logout.php" class="Logout" style="color: blue">Logout</a>
 								<?php }?>
 							</li>
 							<?php if(isset($_SESSION['loggedin'])) {?>
 							
 							<li class style="float:right; margin-right: 30px">
-								<a href="logout.php" class="Logout">Logout</a>
+								<a href="template.php?q=<?php echo $_SESSION['username']; ?>"" style="color: blue"> <?php echo $_SESSION['name']; ?></a>
 							</li>
 							
 							<?php } ?>
@@ -155,10 +181,10 @@
 			<h2 style="color:#595959;"> Director </h2>
 			<hr>
 			<!-- Insert link for Director's Page here-->
-			<a href="#">
+			<a href="template.php?q=<?php echo $director['username'];?>">
 				<div class="card">
 				  <img src="Images/Person.png" alt="John" style="width:100%">
-				  <h3>Director's Name</h3>
+				  <h3><?php echo $director['name'];?></h3>
 				</div>
 			</a>
 		</div>
@@ -200,22 +226,17 @@
 			<h2 style="color:#595959;"> Cross-Cutting Faculty </h2>
 			<hr>
 			<div class="department-row">
-				<div class="department-column">
-					<a href="#">
-						<div class="card">
-						  <img src="Images/Person.png" alt="John" style="width:100%">
-						  <h3>Dean</h3>
-						</div>
-					</a>
-				</div>
-				<div class="department-column">
-					<a href="#">
-						<div class="card">
-						  <img src="Images/Person.png" alt="John" style="width:100%">
-						  <h3>Associate dean</h3>
-						</div>
-					</a>
-				</div>
+				<?php foreach($ccf as $c){?>
+					<div class="department-column">
+						<a href="template.php?q=<?php echo $c['username']?>">
+							<div class="card">
+							  <img src="Images/Person.png" alt="John" style="width:100%">
+							  <h3><?php echo $c['name'];?></h3>
+							  <h3><?php echo $c['pos_name'];?></h3>
+							</div>
+						</a>
+					</div>
+				<?php }?>
 			</div>
 		</div>
 	</div>

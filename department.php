@@ -10,14 +10,17 @@
      	$dept_name = $_GET['q'];
 
      	if(strcmp($dept_name, "CS") == 0){
+     		$dept_name = "Computer Science";
      		$dept_to_write = "Computer Science Department";
      		$is_correct = True;     		     		
      	}
      	else if(strcmp($dept_name, "EE") == 0){
+     		$dept_name = "Electrical";
      		$dept_to_write = "Electrical Department";
      		$is_correct = True;
      	}
      	else if(strcmp($dept_name, "ME") == 0){
+     		$dept_name = "Mechanical";
      		$dept_to_write = "Mechanical Department";
      		$is_correct = True;
      	}
@@ -28,10 +31,11 @@
      
      if($is_correct == True){
      
-     	$result = pg_query($pg, "select Faculty.Name, Users.username from Faculty, Department, Users where Faculty.Id = Users.Id and Faculty.dept_id = Department.Id and  Department.name='$dept_name'");
-     	$resultHOD = pg_query($pg, "select Faculty.Name, Users.username from Faculty, Department, Users, HOD where Faculty.Id = Users.Id and Faculty.dept_id = Department.Id and Department.Id = HOD.dept_id and Department.name='$dept_name'");
+     	$result = pg_query($pg, "select Faculty.Name, Faculty.username from Faculty, Department where Faculty.dept_id = Department.Id and  Department.name='$dept_name'");
+     	$resultHOD = pg_query($pg, "select Faculty.Name, Faculty.username from Faculty, Department, HOD where Faculty.dept_id = Department.Id and Department.Id = HOD.dept_id and Department.name='$dept_name'");
      	$resultHOD = pg_fetch_all($resultHOD);     		
-     	$resultArr = pg_fetch_all($result);     
+     	$resultArr = pg_fetch_all($result);   
+     	#print_r($resultArr);  
      }
      
      
@@ -164,16 +168,15 @@
 							
 							<li class style="float:right; margin-right: 30px">
 								<?php if(!isset($_SESSION['loggedin'])) {?>
-									<button class="trigger" onclick="openForm()">Login</button>
+									<a class="trigger" onclick="openForm()" style="color: blue">Login</a>
 								<?php }else{?>
-									<a href="template.php?q=<?php echo $_SESSION['username']; ?>""> <?php echo $_SESSION['username']; ?></a>
+									<a href="logout.php" class="Logout" style="color: blue">Logout</a>
 								<?php }?>
 							</li>
-							
 							<?php if(isset($_SESSION['loggedin'])) {?>
 							
 							<li class style="float:right; margin-right: 30px">
-								<a href="logout.php" class="Logout">Logout</a>
+								<a href="template.php?q=<?php echo $_SESSION['username']; ?>"" style="color: blue"> <?php echo $_SESSION['name']; ?></a>
 							</li>
 							
 							<?php } ?>
