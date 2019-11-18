@@ -250,15 +250,15 @@ $BODY$
 declare 
   var RECORD;
   var2 RECORD;
-  app_fac RECORD;
-  receiver_fac RECORD;
+  l_cnt Integer;
+  nl_cnt Integer;
   v_cnt numeric;
 begin
 
  IF NEW.status = 'REJECTED' THEN
 
-    UPDATE Leave_Request SET status = 'REJECTED' WHERE ID = NEW.LR_id;
-    UPDATE Leaves SET cur_leave_app_id = 0 WHERE ID = NEW.leave_id;
+    UPDATE Leave_Request SET status = 'REJECTED' WHERE id = NEW.LR_id;
+    UPDATE Leaves SET cur_leave_app_id = 0 WHERE id = NEW.leave_id;
 
  ELSIF NEW.status = 'APPROVED' THEN
     v_cnt := 0;
@@ -267,7 +267,17 @@ begin
 
     -- when all approvals are done
     IF v_cnt = 0 THEN
+
+      SELECT INTO var * FROM Leave_Request WHERE id = NEW.LR_id;
+      SELECT INTO var2 * FROM Leaves WHERE Id = var.leave_id;
+      l_cnt := DATE_PART('day',var.end_date) - DATE_PART('day',var.start_date) ;
+      nl_cnt := 0;
+      IF l_cnt > var2.leaves_left THEN
+        nl_cnt := l_cnt - var2.leaves_left ;
+        l_cnt := var2.leaves_left;
+      END IF;
       UPDATE Leave_Request set status = 'APPROVED' WHERE id = NEW.LR_id;
+      UPDATE Leaves set cur_leave_app_id = 0, leaves_left = leaves_left - l_cnt , next_year_leaves_left = next_year_leaves_left - nl_cnt WHERE Id = var.leave_id;
     END IF;
 
   ELSIF NEW.status = 'RENEW' THEN

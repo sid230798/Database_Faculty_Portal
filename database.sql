@@ -111,6 +111,10 @@ CREATE TABLE Leave_Request (
   status STATUS,
   start_date timestamp,
   end_date timestamp,
+  --Insert
+  note text,
+  signed_on timestamp,
+  -- ------
   comments text,
   PRIMARY KEY(Id)
 );
@@ -121,6 +125,9 @@ CREATE TABLE Leave_Approvals (
   applicant Integer REFERENCES Faculty(Id),
   sender Integer REFERENCES Faculty(Id),
   recipient Integer REFERENCES Faculty(Id),
+  -- Insert
+  recipient_pos Integer REFERENCES Positions(Id),
+  -- ----
   status STATUS,
   signed_On timestamp,
   comments text

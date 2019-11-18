@@ -5,9 +5,9 @@ require 'config.php';
 session_start();
 
 
-$_SESSION["loggedin"] = true;
-$_SESSION["username"] = 'B';
-$_SESSION["facultyID"] = 2;
+#$_SESSION["loggedin"] = true;
+#$_SESSION["username"] = 'B';
+#$_SESSION["facultyID"] = 2;
 $error = "";
 
 if (!isset($_SESSION['loggedin'])) {
@@ -21,7 +21,7 @@ if (isset($_SESSION['facultyID'])) {
 	$fid = $_SESSION['facultyID'];
 	//$sql = "SELECT * FROM Leave_Request WHERE leave_id='$fid' ORDER BY start_date DESC;";
 
-	$sql = "SELECT * FROM Leave_Request WHERE Id IN (SELECT distinct(lr_id) FROM leave_approvals WHERE recipient="."".$_SESSION['facultyID'].");";
+	$sql = "SELECT * FROM Leave_Request WHERE Id IN (SELECT distinct(lr_id) FROM leave_approvals WHERE recipient='$fid');";
 	$result = pg_query($pg, $sql);
 	$leave_applications = array();
 	
@@ -30,6 +30,7 @@ if (isset($_SESSION['facultyID'])) {
 	$resultArr = pg_fetch_all($result);
 	foreach($resultArr as $row){
 		
+		$tmp_checkbox = false;
 		// here $row is each leave_Request for this faculty which will be listed out .. one of these will be the current leave request
 		$per_leave_application = array();
 		/*Get the required fields for current faculty*/
@@ -38,11 +39,19 @@ if (isset($_SESSION['facultyID'])) {
 		$tmp['FacultyID'] = $row['leave_id'];
 		$tmp['Status'] = $row['status'];
 		$tmp['Comment'] = $row['comments'];
-		$tmp_sql = "SELECT faculty.name as fname, positions.name as pname from faculty, faculty_position, positions where faculty_position.faculty_id = '$fid' AND faculty.id = '$fid' AND positions.id = faculty_position.position_id;";
+		$tmp['Start'] = $row['start_date'];
+		$tmp['End'] = $row['end_date'];
+		$tmp['No_of_days'] = (strtotime( $row['start_date'] ) - strtotime( $row['end_date'] ) ) / 86400 ;
+		$tmp['Note'] = $row['note'];
+		$tmp['Signed_On'] = $row['signed_on'];
+		$fid_tmp = $tmp['FacultyID'];
+		
+		#$tmp_sql = "SELECT faculty.name as fname, positions.name as pname from faculty, faculty_position, positions where faculty_position.faculty_id = '$fid' AND faculty.id = '$fid' AND positions.id = faculty_position.position_id;";
+		$tmp_sql = "SELECT name from faculty where faculty.id = '$fid_tmp';";
 		$desg_result = pg_query($pg, $tmp_sql);
 		$desg_result = pg_fetch_all($desg_result);
-		$tmp['Designation'] = $desg_result[0]['pname'];
-		$tmp['FacultyName'] = $desg_result[0]['fname'];
+		#$tmp['Designation'] = $desg_result[0]['pname'];
+		$tmp['FacultyName'] = $desg_result[0]['name'];
 		array_push($per_leave_application, $tmp);
 		/*-------------------------------------------*/
 		
@@ -53,17 +62,25 @@ if (isset($_SESSION['facultyID'])) {
 			$tmp = array();
 			$tmp['FacultyID'] = $row2['recipient'];
 			$fid_tmp = $row2['recipient'];
-			$tmp_sql = "SELECT faculty.name as fname, positions.name as pname from faculty, faculty_position, positions where faculty_position.faculty_id = '$fid_tmp' AND faculty.id = '$fid_tmp' AND positions.id = faculty_position.position_id;";
+			#$tmp_sql = "SELECT faculty.name as fname, positions.name as pname from faculty, faculty_position, positions where faculty_position.faculty_id = '$fid_tmp' AND faculty.id = '$fid_tmp' AND positions.id = faculty_position.position_id;";
+			$tmp_sql = "SELECT name from faculty where faculty.id = '$fid_tmp';";
 			$desg_result = pg_query($pg, $tmp_sql);
 			$desg_result = pg_fetch_all($desg_result);
 			$tmp['Status'] = $row2['status'];
-			$tmp['Designation'] = $desg_result[0]['pname'];
-			$tmp['FacultyName'] = $desg_result[0]['fname'];
+			#$tmp['Designation'] = $desg_result[0]['pname'];
+			#----------------------------------------------------
+			$posid = $row2['recipient_pos'];
+			$tmp_pos_dash = "SELECT name from positions where id = '$posid';";
+			$result_pos_dash = pg_query($pg, $tmp_pos_dash);
+			$result_pos_dash_arr = pg_fetch_all($result_pos_dash);
+			$tmp['Designation'] = $result_pos_dash_arr[0]['name'];
+			#-------------------------------------------------------
+			$tmp['FacultyName'] = $desg_result[0]['name'];
 			$tmp['Date'] = $row2['signed_on'];
 			$tmp['Comment'] = $row2['comments'];
 			$tmp['isSubmit'] = false;		
 						
-			if($_SESSION["facultyID"] == $tmp['FacultyID'] and strcmp($tmp['Status'], 'PENDING') == 0){
+			if($_SESSION["facultyID"] == $tmp['FacultyID'] and (strcmp($tmp['Status'], 'PENDING') == 0 or strcmp($tmp['Status'], 'MODIFIED') == 0)){ 
 				$tmp_checkbox = true;
 				$tmp['isSubmit'] = true;
 			}
@@ -129,8 +146,8 @@ if (isset($_SESSION['facultyID'])) {
 	<div class="container">
 		<ul>
 			<li> <h2 style="color: Tomato; margin-left: -40px;">Leave Approval's</h2> </li>
-			<li style="float: right;"> <a href="#">Logout</a></li>
-			<li style="float: right;padding-right: 20px"> <a href="#">Username</a></li>
+			<li style="float: right;"> <a href="logout.php">Logout</a></li>
+			<li style="float: right;padding-right: 20px"> <a href="template.php?q=<?php echo $_SESSION['username'];?>"><?php echo $_SESSION['name'];?></a></li>
 		</ul>
 	</div>
 	<div class="container">
@@ -152,7 +169,7 @@ if (isset($_SESSION['facultyID'])) {
 							<!--<?php if(strcmp($leave_applications[$idx][0]['Status'], 'RENEW') == 0){ ?><input type="submit" class="btn btn-primary" value="Edit"><?php } ?>-->
 						</li>
 						<li style="float: right">
-							<label>Overall-Status: </label>
+							<br><br><br><br><br><br><label>Overall-Status: </label>
 							<input type="text" name="Status" class="form-control" value="<?php echo $leave_applications[$idx][0]['Status']; ?>" readonly>
 						</li>
 					</ul>
@@ -161,10 +178,17 @@ if (isset($_SESSION['facultyID'])) {
 				<div class="form-group">				
 					<label style="color: blue"> Leave Application Id : <?php echo $leave_applications[$idx][0]['LeaveID'];?> </label><br>
 					<label style="color: blue"> Faculty : <?php echo $leave_applications[$idx][0]['FacultyName'];?> </label><br>
+					<label style="color: blue"> Start Date : <?php echo $leave_applications[$idx][0]['Start'];?> </label><br>
+					<label style="color: blue"> End Date : <?php echo $leave_applications[$idx][0]['End'];?> </label><br>
+					<label style="color: blue"> Initiated On : <?php echo $leave_applications[$idx][0]['Signed_On'];?> </label><br>
 					<!--<label style="color: blue"> Date :  </label>-->	
 				</div>
 				<div class="form-group">
+					<?php if(strcmp($leave_applications[$idx][0]['Note'], "") != 0){?>
+						<label> Notes </label>
+						<input type="text" name="note" class="form-control" value="<?php echo $leave_applications[$idx][0]['Note'];?>" readonly><br>
 					
+					<?php } ?>
 					<label> Comment </label>
 					<input type="text" name="Comment" class="form-control" value="<?php echo $leave_applications[$idx][0]['Comment'];?>" readonly><br>
 					
@@ -172,7 +196,7 @@ if (isset($_SESSION['facultyID'])) {
 				<!-- Repeat this for complete trail -->
 				<div class="Trail<?php echo $leave_applications[$idx][0]['LeaveID'];?>" style="display: none">
 					<?php for($cnt = 1; $cnt < count($leave_applications[0]); $cnt++){?>
-					<?php if($leave_applications[$idx][$cnt]['isSubmit']){?><form action="" method="post"><?php }?>	
+					<?php if($leave_applications[$idx][$cnt]['isSubmit']){?><form action="update_status.php" method="post"><?php }?>	
 						<div class="form-group">
 						<input type="hidden" name="Leave_id" value="<?php echo $leave_applications[$idx][0]['LeaveID'];?>">
 						<ul>
