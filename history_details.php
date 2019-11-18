@@ -190,7 +190,7 @@ if (isset($_SESSION['facultyID'])) {
 				</div>
 				<!-- Repeat this for complete trail -->
 				<div class="Trail<?php echo $leave_applications[$idx][0]['LeaveID'];?>" style="display: none">
-					<?php for($cnt = 1; $cnt < count($leave_applications[0]); $cnt++){?>						
+					<?php for($cnt = 1; $cnt < count($leave_applications[$idx]); $cnt++){?>						
 						<div class="form-group">
 						<ul>
 							<li style="float: right">
@@ -220,14 +220,16 @@ if (isset($_SESSION['facultyID'])) {
 	
 		function toggleDisplay(id){
 		
-			var x = document.getElementsByClassName(id)[0];
-			if(x.style.display == "none"){
-				x.style.display = "block";
-				document.getElementById(id).innerHTML = "Hide";
-			}
-			else{
-				x.style.display = "none";
-				document.getElementById(id).innerHTML = "Show";
+			var x = document.getElementsByClassName(id);
+			for(var i = 0;i<x.length;i++){
+				if(x[i].style.display == "none"){
+					x[i].style.display = "block";
+					document.getElementById(id).innerHTML = "Hide";
+				}
+				else{
+					x[i].style.display = "none";
+					document.getElementById(id).innerHTML = "Show";
+				}
 			}	
 				
 		}
