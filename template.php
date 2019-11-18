@@ -20,12 +20,16 @@
 		$teaching = array();
 		$education = array();
 		
+		$extra_info = array();
 		foreach($cursor as $entry){
 			 $c = get_object_vars($entry);
+			 
+			 $dynamic_keys = array_keys($c);
 			 $name = $c['name'];
 			 $email = $c['email'];
 			 $overview = $c['Overview'];
 		 
+		 	 #print_r(array_keys($c));
 			 foreach($c['Publication'] as $pub){
 			 	$tmp = get_object_vars($pub);
 			 	array_push($publications, $tmp);
@@ -51,9 +55,30 @@
 			 	array_push($teaching, $tmp);
 			 
 			 }
+			 
+			 for($cnt = 11; $cnt < count($dynamic_keys);$cnt++){
+			 
+			 	$tmp = array();
+			 	$tmp["Key"] = $dynamic_keys[$cnt];
+			 	
+			 	$key = $tmp["Key"];
+			 	$tmp_key = array();
+			 	foreach($c[$key] as $new_val){
+			
+					$tmp_dash = get_object_vars($new_val);
+				 	array_push($tmp_key, $tmp_dash);
+			
+			 	}
+			 	#$array_content = get_object_vars($c[$key]);
+			 	#print_r($array_content);
+			 	$tmp["Values"] = $tmp_key;
+			 
+			 	array_push($extra_info, $tmp);
+			 }
 		 
 		}
     
+    	#print_r($extra_info);
     }
 
 ?>
@@ -261,6 +286,13 @@
 									<a href="#" id="Teaching"> Teaching </a>
 								</li>
 								
+								<?php for($idx=0; $idx < count($extra_info); $idx++){ ?>
+								
+									<li class="menu-list">
+									<a href="#" id="<?php echo $extra_info[$idx]['Key'];?>"><?php echo $extra_info[$idx]['Key'];?></a>
+									</li>
+								
+								<?php } ?>
 								<?php if(isset($_SESSION['loggedin'])){?>
 								
 									<?php if(strcmp($_SESSION['username'], $username) == 0) {?>
@@ -364,8 +396,20 @@
 					</li>
 					<?php }?>
 					</ul>
-				</div>				
+				</div>
 				
+				<?php for($idx = 0;$idx < count($extra_info);$idx++){ ?>
+				
+					<div class="<?php echo $extra_info[$idx]['Key'];?>" style="display: none">				
+						<ul>
+							<?php for($idx2=0;$idx2 < count($extra_info[$idx]['Values']);$idx2++){?>
+							
+								<li><h2 style="color: blue"><?php echo $extra_info[$idx]['Values'][$idx2]['Comment']; ?> </h2></li>
+							
+							<?php }?>
+						</ul>
+					</div>
+				<?php } ?>
 	  		</div>
 		
 		</div>

@@ -4,54 +4,83 @@
 	session_start();
 	$_SESSION['url'] = $_SERVER['REQUEST_URI'];
 	 /*Just for Verification purposes*/
-	$username = $_SESSION['username'];
-	
-	$filter = ['username' => $username];
-	$options = [];
-	$query = new MongoDB\Driver\Query($filter, $options);
-	$cursor = $manager->executeQuery('faculty_portal.users', $query);
-	
-	$name = "";
-	$email = "";
-	$overview = "";
-	$publications = array();
-	$awards = array();
-	$teaching = array();
-	$education = array();
-	
-	foreach($cursor as $entry){
-		 $c = get_object_vars($entry);
-		 $id = $c['_id']->__toString();
-		 $name = $c['name'];
-		 $email = $c['email'];
-		 $overview = $c['Overview'];
-	 
-		 foreach($c['Publication'] as $pub){
-		 	$tmp = get_object_vars($pub);
-		 	array_push($publications, $tmp);
-		 }
-		 
-		 foreach($c['Education'] as $edu){
+	if(isset($_SESSION['loggedin'])){
+		$username = $_SESSION['username'];
 		
-			$tmp = get_object_vars($edu);
-		 	array_push($education, $tmp);
+		$filter = ['username' => $username];
+		$options = [];
+		$query = new MongoDB\Driver\Query($filter, $options);
+		$cursor = $manager->executeQuery('faculty_portal.users', $query);
 		
-		 }
+		$name = "";
+		$email = "";
+		$overview = "";
+		$publications = array();
+		$awards = array();
+		$teaching = array();
+		$education = array();
+		
+		$extra_info = array();
+		foreach($cursor as $entry){
+			 $c = get_object_vars($entry);
+			 $id = $c['_id']->__toString();
+			 $name = $c['name'];
+			 $email = $c['email'];
+			 $overview = $c['Overview'];
 		 
-		 foreach($c['Award'] as $aw){
-		 
-		 	$tmp = get_object_vars($aw);
-		 	array_push($awards, $tmp);
-		 
-		 }
-		 
-		 foreach($c['Teaching'] as $te){
-		 
-		 	$tmp = get_object_vars($te);
-		 	array_push($teaching, $tmp);
-		 
-		 }
-		 
+		 	 $dynamic_keys = array_keys($c);
+			 foreach($c['Publication'] as $pub){
+			 	$tmp = get_object_vars($pub);
+			 	array_push($publications, $tmp);
+			 }
+			 
+			 foreach($c['Education'] as $edu){
+			
+				$tmp = get_object_vars($edu);
+			 	array_push($education, $tmp);
+			
+			 }
+			 
+			 foreach($c['Award'] as $aw){
+			 
+			 	$tmp = get_object_vars($aw);
+			 	array_push($awards, $tmp);
+			 
+			 }
+			 
+			 foreach($c['Teaching'] as $te){
+			 
+			 	$tmp = get_object_vars($te);
+			 	array_push($teaching, $tmp);
+			 
+			 }
+			 
+			 for($cnt = 11; $cnt < count($dynamic_keys);$cnt++){
+				 
+				 	$tmp = array();
+				 	$tmp["Key"] = $dynamic_keys[$cnt];
+				 	
+				 	$key = $tmp["Key"];
+				 	$tmp_key = array();
+				 	foreach($c[$key] as $new_val){
+				
+						$tmp_dash = get_object_vars($new_val);
+					 	array_push($tmp_key, $tmp_dash);
+				
+				 	}
+				 	#$array_content = get_object_vars($c[$key]);
+				 	#print_r($array_content);
+				 	$tmp["Values"] = $tmp_key;
+				 
+				 	array_push($extra_info, $tmp);
+			}
+			
+			#print_r($extra_info[0]['Values'][0]['Index']);
+			 
+		}
+	}else{
+	
+		header('Location: hierarchy.php');
 	}
 
 ?>
@@ -174,6 +203,18 @@
 																
 								<li class="menu-list">
 									<a href="#" id="Teaching"> Teaching </a>
+								</li>
+								<!-- This is for experiments -->
+								<?php for($idx=0; $idx < count($extra_info); $idx++){ ?>
+								
+									<li class="menu-list">
+									<a href="#" id="<?php echo $extra_info[$idx]['Key'];?>"><?php echo $extra_info[$idx]['Key'];?></a>
+									</li>
+								
+								<?php } ?>
+								<!-- ---------------------------->
+								<li class="menu-list">
+									<a href="#" id="Add-Feature"> Add-Feature </a>
 								</li>
 								
 								<li class="menu-list" style="float:right; margin-right: 30px">	
@@ -377,6 +418,76 @@
 		    </form>
 		</div>
     </div>
+    <!-- ExtraInfo Content ---------------------------------------------------->
+    <?php for($idx = 0;$idx < count($extra_info);$idx++){ ?>
+				
+		<div class="<?php echo $extra_info[$idx]['Key'];?>" style="display: none">
+			<div class="modal-content">
+				<h2> <?php echo $extra_info[$idx]['Key'];?> Profile </h2>
+				<p> Please Edit the required Information </p>
+				<form action="extra_update.php" method="post">	
+					<input type="hidden" name="Key" value="<?php echo $extra_info[$idx]['Key'];?>"/>
+		    		<input type="hidden" name="id" value="<?php echo $id; ?>"/>
+		    		<div id="<?php echo $extra_info[$idx]['Key'];?>-Content">		
+						<?php for($idx2=0;$idx2 < count($extra_info[$idx]['Values']);$idx2++){?>
+							<div class="container">
+								<h3> <?php echo $extra_info[$idx]['Key']."-".$extra_info[$idx]['Values'][$idx2]['Index']; ?></h3>
+								<div class="form-group">
+									<!--<label>Course</label>-->
+									<input type="hidden" name="index[]" class="form-control" value="<?php echo $extra_info[$idx]['Values'][$idx2]['Index']; ?>">
+								</div>
+								<div class="form-group">
+									<label>Comments</label>
+									<input type="text" name="comment[]" class="form-control" value="<?php echo $extra_info[$idx]['Values'][$idx2]['Comment']; ?>" required>
+								</div> 
+								<!--<li><h2 style="color: blue"><?php echo $extra_info[$idx]['Values'][$idx2]['Comment']; ?> </h2></li>-->
+							</div>
+							<hr>
+						<?php }?>
+					</div>
+					<div class="form-group">
+				        <button class="btn btn-primary" id = "<?php echo $extra_info[$idx]['Key'];?>" onclick="addExtra(this.id)">Add</button>
+				    </div>
+				    <div class="form-group">
+				        <input type="submit" class="btn btn-primary" value="Submit">
+				    </div>
+				</form>
+			</div>
+		</div>
+	<?php } ?>
+    <!-- ---------------------------------------------------------------------->
+    <!-- Add more features to cv -->
+    <div class="Add-Feature" style="display: none">
+		<div class="modal-content">
+		    <h2>Additional Profile</h2>
+		    <p>Please Edit the required Information.</p>
+		    <form action="add_feature.php" method="post">
+		    	<input type="hidden" name="Additional_Feature_Form" value="1"/>
+		    	<input type="hidden" name="id" value="<?php echo $id; ?>"/>
+		    	<input type="text" name="Title" placeholder="Add Title for new field" required/>
+		    	<div id="Add-Feature-Content">		    	
+					<div class="container">
+						<div class="form-group">
+					    	<!--<label>Course</label>-->
+					    	<input type="hidden" name="index[]" class="form-control" value="1">
+					    </div>
+					    <div class="form-group">
+							<label>Comments</label>
+							<input type="text" name="comment[]" class="form-control" placeholde="Add info for new field" required>
+					    </div> 
+					</div>
+		   			<hr>
+		    	</div>
+		    	<div class="form-group">
+		            <button class="btn btn-primary" onclick="addFeature()">Add</button>
+		        </div>
+		        <div class="form-group">
+		            <input type="submit" class="btn btn-primary" value="Submit">
+		        </div>
+		    </form>
+		</div>
+    </div>
+    <!-- --------------------------->
     <?php }else{?>
     
     	<h1> Wrong Address!!! </h1>
@@ -586,6 +697,98 @@
 			parent.appendChild(div);
 			parent.appendChild(document.createElement("hr"));
 		
+		
+		
+		}
+		
+		function addExtra(key){
+		
+			//alert(key);
+			
+			var parent = document.getElementById(key+"-Content");
+			var count = parent.childElementCount/2 + 1;
+			var div = document.createElement("DIV");
+			div.className = "container";
+			var h3 = document.createElement("H3");
+			h3.innerHTML = key +"-"+ count;
+			//alert(h3.innerHTML);
+			div.appendChild(h3);
+			
+			var div1 = document.createElement("DIV");
+			div1.className = "form-group";
+			//var label1 = document.createElement("LABEL");
+			//label1.innerHTML = "Course";
+			//div1.appendChild(label1);
+			var input1 = document.createElement("INPUT");
+			input1.type = "hidden";
+			input1.name = "index[]";
+			input1.className = "form-control";
+			input1.value = count;
+			div1.appendChild(input1);
+			div.appendChild(div1);
+			
+			var div2 = document.createElement("DIV");
+			div2.className = "form-group";
+			var label2 = document.createElement("LABEL");
+			label2.innerHTML = "Comments";
+			div2.appendChild(label2);
+			var input2 = document.createElement("INPUT");
+			input2.type = "text";
+			input2.name = "comment[]";
+			input2.className = "form-control";
+			input2.required = true;
+			div2.appendChild(input2);
+			div.appendChild(div2);
+			
+			parent.appendChild(div);
+			parent.appendChild(document.createElement("hr"));
+			
+		
+		
+		}
+		
+		function addFeature(){
+		
+			//alert(key);
+			
+			var parent = document.getElementById("Add-Feature-Content");
+			var count = parent.childElementCount/2 + 1;
+			var div = document.createElement("DIV");
+			div.className = "container";
+			//var h3 = document.createElement("H3");
+			//h3.innerHTML = key +"-"+ count;
+			//alert(h3.innerHTML);
+			//div.appendChild(h3);
+			
+			var div1 = document.createElement("DIV");
+			div1.className = "form-group";
+			//var label1 = document.createElement("LABEL");
+			//label1.innerHTML = "Course";
+			//div1.appendChild(label1);
+			var input1 = document.createElement("INPUT");
+			input1.type = "hidden";
+			input1.name = "index[]";
+			input1.className = "form-control";
+			input1.value = count;
+			div1.appendChild(input1);
+			div.appendChild(div1);
+			
+			var div2 = document.createElement("DIV");
+			div2.className = "form-group";
+			var label2 = document.createElement("LABEL");
+			label2.innerHTML = "Comments";
+			div2.appendChild(label2);
+			var input2 = document.createElement("INPUT");
+			input2.type = "text";
+			input2.name = "comment[]";
+			input2.className = "form-control";
+			input2.required = true;
+			div2.appendChild(input2);
+			div.appendChild(div2);
+			
+			parent.appendChild(div);
+			parent.appendChild(document.createElement("hr"));
+			
 		
 		
 		}
