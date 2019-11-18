@@ -27,6 +27,7 @@ if (isset($_SESSION['facultyID'])) {
 	
 	$is_checkbox = array();
 	$tmp_checkbox = false;
+	$show_result = false;
 	$resultArr = pg_fetch_all($result);
 	foreach($resultArr as $row){
 		
@@ -36,6 +37,8 @@ if (isset($_SESSION['facultyID'])) {
 		/*Get the required fields for current faculty*/
 		$tmp = array();
 		$tmp['LeaveID'] = $row['id'];
+		if($tmp['LeaveID'] == 10)
+			$show_result=true;
 		$tmp['FacultyID'] = $row['leave_id'];
 		$tmp['Status'] = $row['status'];
 		$tmp['Comment'] = $row['comments'];
@@ -91,6 +94,8 @@ if (isset($_SESSION['facultyID'])) {
 		
 		array_push($is_checkbox, $tmp_checkbox);
 		array_push($leave_applications, $per_leave_application);
+		/*if($show_result)
+			print_r($per_leave_application);*/
 	}
 	
 	#print_r($leave_applications);
@@ -195,7 +200,7 @@ if (isset($_SESSION['facultyID'])) {
 				</div>
 				<!-- Repeat this for complete trail -->
 				<div class="Trail<?php echo $leave_applications[$idx][0]['LeaveID'];?>" style="display: none">
-					<?php for($cnt = 1; $cnt < count($leave_applications[0]); $cnt++){?>
+					<?php for($cnt = 1; $cnt < count($leave_applications[$idx]); $cnt++){?>
 					<?php if($leave_applications[$idx][$cnt]['isSubmit']){?><form action="update_status.php" method="post"><?php }?>	
 						<div class="form-group">
 						<input type="hidden" name="Leave_id" value="<?php echo $leave_applications[$idx][0]['LeaveID'];?>">
@@ -234,14 +239,16 @@ if (isset($_SESSION['facultyID'])) {
 	
 		function toggleDisplay(id){
 		
-			var x = document.getElementsByClassName(id)[0];
-			if(x.style.display == "none"){
-				x.style.display = "block";
-				document.getElementById(id).innerHTML = "Hide";
-			}
-			else{
-				x.style.display = "none";
-				document.getElementById(id).innerHTML = "Show";
+			var x = document.getElementsByClassName(id);
+			for(var i = 0;i<x.length;i++){
+				if(x[i].style.display == "none"){
+					x[i].style.display = "block";
+					document.getElementById(id).innerHTML = "Hide";
+				}
+				else{
+					x[i].style.display = "none";
+					document.getElementById(id).innerHTML = "Show";
+				}
 			}	
 				
 		}

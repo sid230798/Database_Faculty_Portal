@@ -11,12 +11,16 @@
 			$status = $_POST['Status'];
 			$comment = $_POST['Comment'];
 			$fid = $_SESSION['facultyID'];
+			$getPosSql = "select Position_Id from faculty_position where faculty_id='$fid'";
+			$posResult = pg_query($pg, $getPosSql);
+			$posResultArr = pg_fetch_all($posResult);
+			$posid = $posResultArr[0]['position_id'];
 			
-			$sql = "update leave_approvals set status='$status', comments='$comment' where lr_id='$leave_id' and recipient='$fid'";
+			$sql = "update leave_approvals set status='$status', comments='$comment', recipient_pos='$posid' where lr_id='$leave_id' and recipient='$fid'";
 			$result = pg_query($pg, $sql);
 			
 			if($result){
-				header('Location: leave_application_portal.php');
+				header('Location: leave_approval_portal.php');
 			}else{
 				echo "Something went Worng!!";
 			}
