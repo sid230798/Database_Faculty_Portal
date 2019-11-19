@@ -304,10 +304,11 @@
 										<a href="leave_application_portal.php" id="Leave-Status"> My-Leave-Portal </a>
 										</li>
 										
+										
+										<li class="menu-list">
+										<a href="leave_approval_portal.php" id="Leave-Status"> Leave-Approval-Portal </a>
+										</li>
 										<?php if($_SESSION['HOD'] == 1 || $_SESSION['CCF'] == 1) {?>
-											<li class="menu-list">
-											<a href="leave_approval_portal.php" id="Leave-Status"> Leave-Approval-Portal </a>
-											</li>
 											<li class="menu-list">
 											<a href="history_details.php" id="Leave-History"> History-Portal </a>
 											</li>
