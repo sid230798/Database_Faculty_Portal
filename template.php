@@ -3,8 +3,9 @@
 	session_start();
 	require_once('config.php');
 	
+	$_SESSION['url'] = $_SERVER['REQUEST_URI'];
 	if(isset($_GET['q'])){
-    
+    	
     	$username = $_GET['q'];
     	#$username= 'A';
     	$filter = ['username' => $username];
@@ -79,6 +80,9 @@
 		}
     
     	#print_r($extra_info);
+    }else{
+    
+    	header('Location: hierarchy.php');
     }
 
 ?>
@@ -254,7 +258,7 @@
 			<div class="primary">
 			
 				<div class="container">
-					<a href="#">
+					<a href="hierarchy.php">
 						<img src="Images/IITLogo.jpg" alt="Indian Institute of Ropar" class="Logo" >
 					</a>
 					

@@ -13,11 +13,17 @@
 			$name = $_POST['name'];
 			$email = $_POST['email'];
 			$overview = $_POST['overview'];
+			$fid = $_SESSION["facultyID"];
 			
 			$insRec->update(['_id'=>new MongoDB\BSON\ObjectID($id)],['$set' => ["username" => $username, "password" => $pass, "name" => $name, "email" => $email, "Overview" => $overview]]);
 			$writeConcern = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY, 1000);
 			$result = $manager->executeBulkWrite('faculty_portal.users', $insRec, $writeConcern);
 			//header($_SESSION['url']);
+			/*Editing same username, password and name*/
+			$sql = "update faculty set username='$username', password='$pass', name='$name', email='$email' where id='$fid'";
+			$posResult = pg_query($pg, $sql);
+			
+			header('Location: logout.php');
 			echo $result->getModifiedCount();
 		
 		}elseif(isset($_POST['PublicationForm'])){

@@ -148,6 +148,7 @@ if (isset($_SESSION['facultyID'])) {
 			<!-- Edit comment and status -->
 			<form action="<?php if($idx == 0){ echo "edit_app.php"; }?>" method="post">
 				<div class="form-group">
+					<input type="hidden" name="leave_id" value = "<?php echo $leave_applications[$idx][0]['LeaveID']; ?>" >
 					<ul>
 						<li style="margin-left: -40px;">
 							<?php if(strcmp($leave_applications[$idx][0]['Status'], 'RENEW') == 0){ ?><input type="submit" class="btn btn-primary" value="Edit"><?php } ?>

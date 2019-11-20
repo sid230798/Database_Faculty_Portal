@@ -171,7 +171,7 @@
 			<div class="primary">
 			
 				<div class="container">
-					<a href="#">
+					<a href="hierarchy.php">
 						<img src="Images/IITLogo.jpg" alt="Indian Institute of Ropar" class="Logo" >
 					</a>
 					
@@ -243,27 +243,27 @@
 		    	<input type="hidden" name="id" value="<?php echo $id; ?>"/>
 		        <div class="form-group">
 		            <label>Username</label>
-		            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
+		            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>" required>
 		            <span class="help-block"></span>
 		        </div>    
 		        <div class="form-group">
 		            <label>Password</label>
-		            <input type="password" name="password" class="form-control" value="<?php echo $pass; ?>">
+		            <input type="password" name="password" class="form-control" value="<?php echo $pass; ?>" required>
 		            <span class="help-block"></span>
 		        </div>
 		        <div class="form-group">
 		            <label>Name</label>
-		            <input type="text" name="name" class="form-control" value="<?php echo $name; ?>">
+		            <input type="text" name="name" class="form-control" value="<?php echo $name; ?>" required>
 		            <span class="help-block"></span>
 		        </div>
 		        <div class="form-group">
 		            <label>Email</label>
-		            <input type="text" name="email" class="form-control" value="<?php echo $email; ?>">
+		            <input type="text" name="email" class="form-control" value="<?php echo $email; ?>" required>
 		            <span class="help-block"></span>
 		        </div>
 		        <div class="form-group">
 		            <label>Overview</label>
-		            <input type="text" name="overview" class="form-control" value="<?php echo $overview; ?>">
+		            <input type="text" name="overview" class="form-control" value="<?php echo $overview; ?>" required>
 		            <span class="help-block"></span>
 		        </div>
 		        <div class="form-group">

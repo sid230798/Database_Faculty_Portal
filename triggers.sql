@@ -177,8 +177,8 @@ begin
   RAISE NOTICE 'Invalid Position. The targeted person is Unknown.';
  END IF;
 
- INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On) 
- VALUES (NEW.Id , NEW.leave_id, NEW.leave_id, receiver_fac.faculty_id, 'PENDING' , now());
+ INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, recipient_pos, status, signed_On) 
+ VALUES (NEW.Id , NEW.leave_id, NEW.leave_id, receiver_fac.faculty_id, var2.recipient , 'PENDING' , now());
 
  -- initiate the rest of the path
  LOOP
@@ -202,8 +202,8 @@ begin
       EXIT WHEN 1<2;
      END IF;
 
-     INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, status, signed_On) 
-     VALUES (NEW.Id , NEW.leave_id, rec , receiver_fac.faculty_id, 'INITIATED' , now());
+     INSERT INTO Leave_Approvals (LR_id, applicant, sender, recipient, recipient_pos, status, signed_On) 
+     VALUES (NEW.Id , NEW.leave_id, rec , receiver_fac.faculty_id, var3.recipient , 'INITIATED' , now());
 
      var2.recipient := var3.recipient;
 
@@ -258,9 +258,11 @@ begin
  IF NEW.status = 'REJECTED' THEN
 
     UPDATE Leave_Request SET status = 'REJECTED' WHERE id = NEW.LR_id;
-    UPDATE Leaves SET cur_leave_app_id = 0 WHERE id = NEW.leave_id;
+    UPDATE Leaves SET cur_leave_app_id = 0 WHERE id = NEW.applicant;
 
  ELSIF NEW.status = 'APPROVED' THEN
+    
+    UPDATE Leave_Request set status= 'PENDING' where id = NEW.LR_id AND leave_id = NEW.applicant;
     v_cnt := 0;
     UPDATE Leave_Approvals set status = 'PENDING' where LR_id = NEW.LR_id AND applicant = NEW.applicant AND sender = NEW.recipient;
     GET DIAGNOSTICS v_cnt = ROW_COUNT;

@@ -15,7 +15,9 @@ if (!isset($_SESSION['loggedin'])) {
 if (isset($_SESSION['facultyID'])) {
 
 	$fid = $_SESSION['facultyID'];
-	$sql = "SELECT start_date, end_date, comments, status FROM Leave_Request WHERE leave_id='$fid';";
+	$lid = $_POST['leave_id'];
+	$sql = "SELECT start_date, end_date, comments, status FROM Leave_Request WHERE leave_id='$fid' and id='$lid' and status='RENEW';";
+
 
 	$result = pg_query($pg, $sql);
 	$row = pg_fetch_array($result);
@@ -23,6 +25,7 @@ if (isset($_SESSION['facultyID'])) {
 	$end_date = $row['end_date'];
 	$comments = $row['comments'];
 	$status = $row['status'];
+	#print_r($row);
 	if($status != 'RENEW'){
 		$error = 'Application cannot be updated unless asked for.';
 		$to_check = false;
@@ -32,7 +35,7 @@ if (isset($_SESSION['facultyID'])) {
 
 			$comment = $_POST['comment'];
 
-			$sql = "UPDATE Leave_Request set comments = '$comment', status = 'MODIFIED' WHERE leave_id = '$fid';";
+			$sql = "UPDATE Leave_Request set comments = '$comment', status = 'MODIFIED' WHERE leave_id = '$fid' and id='$lid';";
 			// echo $sql;
 			$res2 = pg_query($pg , $sql);
 			if($res2){
@@ -42,6 +45,8 @@ if (isset($_SESSION['facultyID'])) {
 			}
 		}
 	}
+	
+	#echo $end_date;
 }
 ?>
 
@@ -86,9 +91,10 @@ if (isset($_SESSION['facultyID'])) {
 				        Start Date for the Leaves : <input type="text" name="start" class="form-control" value="<?php echo $start_date; ?>" readonly>
 				    </div>    
 				    <div class="form-group">
-				        End Date for the Leaves : <input type="date" name="end" class="form-control" value="<?php echo $end_date;?>" readonly>
+				        End Date for the Leaves : <input type="text" name="end" class="form-control" value="<?php echo $end_date;?>" readonly>
 				    </div>
 				    <form action="" method="post">
+				    	<input type="hidden" name="leave_id" value = "<?php echo $lid; ?>" >
 						<div class="form-group">					
 							<label> Comment </label>
 							<input type="text" name="comment" class="form-control" value="<?php echo $comments; ?>" required>				

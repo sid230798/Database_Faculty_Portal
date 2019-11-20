@@ -89,6 +89,7 @@ if (isset($_SESSION['facultyID'])) {
 			}
 			
 			array_push($per_leave_application, $tmp);
+			#print_r($row2);
 			// this is each leave_approval row which needs to be printed on clicking view
 		}
 		

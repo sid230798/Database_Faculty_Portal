@@ -152,7 +152,7 @@
 		<div class="primary" >
 		
 			<div class="container">
-				<a href="hierarchy.html">
+				<a href="hierarchy.php">
 					<img src="Images/IITLogo.jpg" alt="Indian Institute of Ropar" class="Logo">
 				</a>
 				
